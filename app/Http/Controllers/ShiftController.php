@@ -38,6 +38,9 @@ class ShiftController extends Controller
         $shifts = $query->orderBy('employee_name')->paginate(5);
         $employees = Employee::orderBy('employee_name')->get();
         
+        \Log::info('Employees count: ' . $employees->count());
+        \Log::info('Shifts count: ' . $shifts->count());
+        
         // Get shift counts by type
         $morningShiftCount = Shift::where('shift_type', 'Morning Shift')->count();
         $afternoonShiftCount = Shift::where('shift_type', 'Afternoon Shift')->count();
@@ -52,6 +55,9 @@ class ShiftController extends Controller
      */
     public function store(Request $request)
     {
+        // Debug: Log all incoming data
+        \Log::info('Shift store method called with data:', $request->all());
+        
         $validated = $request->validate([
             'employee_id' => 'required|integer|exists:employees,id',
             'shift_type' => 'required|in:Morning Shift,Afternoon Shift,Night Shift',
@@ -61,12 +67,17 @@ class ShiftController extends Controller
             'days.*' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday'
         ]);
 
+        \Log::info('Validation passed:', $validated);
+
         try {
             // Get employee name from employees table
             $employee = Employee::find($validated['employee_id']);
             if (!$employee) {
+                \Log::error('Employee not found with ID: ' . $validated['employee_id']);
                 return back()->with('error', 'Employee not found');
             }
+
+            \Log::info('Found employee: ' . $employee->employee_name);
 
             // Prepare shift data with employee name from database
             $shiftData = [
@@ -78,10 +89,16 @@ class ShiftController extends Controller
                 'days' => implode(', ', $validated['days']),
             ];
 
+            \Log::info('Creating shift with data:', $shiftData);
+
             $shift = Shift::create($shiftData);
+
+            \Log::info('Shift created successfully with ID: ' . $shift->id);
 
             return back()->with('success', 'Shift added successfully!');
         } catch (\Exception $e) {
+            \Log::error('Error creating shift: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return back()->with('error', 'Error adding shift: ' . $e->getMessage());
         }
     }

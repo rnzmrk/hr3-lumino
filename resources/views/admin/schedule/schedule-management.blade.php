@@ -396,7 +396,7 @@
             </div>
         </div>
         
-        <form action="/shifts" method="POST">
+        <form action="/shifts" method="POST" id="addShiftForm">
             @csrf
             <div class="px-6 py-4">
                 <!-- Employee Search -->
@@ -461,6 +461,9 @@
             </div>
             
             <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <button type="button" onclick="testFormValues()" class="px-4 py-2 text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100">
+                    🧪 Test Values
+                </button>
                 <button type="button" onclick="closeAddShiftModal()" class="px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
                     Cancel
                 </button>
@@ -487,6 +490,7 @@
 <script>
 // Employee data from controller
 const employees = @json($employees ?? []);
+console.log('Loaded employees:', employees.length, 'employees');
 
 // Live Search for Schedule Table - TRUE LIKE search as you type
 document.getElementById('liveScheduleSearch').addEventListener('input', function(e) {
@@ -600,11 +604,18 @@ function clearEmployeeSearch() {
 }
 
 function selectEmployee(id, name) {
+    console.log('Employee selected:', id, name);
     document.getElementById('employeeId').value = id;
     document.getElementById('employeeNameDisplay').value = name + ' (ID: ' + id + ')';
     document.getElementById('employeeSearch').value = name;
     document.getElementById('employeeSearchResults').classList.add('hidden');
     document.getElementById('modalSearchLoading').style.opacity = '0';
+    
+    // Add visual feedback
+    document.getElementById('employeeNameDisplay').style.backgroundColor = '#dcfce7';
+    setTimeout(() => {
+        document.getElementById('employeeNameDisplay').style.backgroundColor = '';
+    }, 1000);
 }
 
 // Employee search functionality - LIVE SEARCH as you type
@@ -612,6 +623,8 @@ document.getElementById('employeeSearch').addEventListener('input', function(e) 
     const searchTerm = e.target.value.toLowerCase();
     const resultsDiv = document.getElementById('employeeSearchResults');
     const loadingIndicator = document.getElementById('modalSearchLoading');
+    
+    console.log('Searching for:', searchTerm);
     
     // IMMEDIATE live search - search with just 1 character
     if (searchTerm.length < 1) {
@@ -634,6 +647,8 @@ document.getElementById('employeeSearch').addEventListener('input', function(e) 
             emp.employee_name.toLowerCase().includes(searchTerm) ||
             emp.id.toString().includes(searchTerm)
         );
+        
+        console.log('Found employees:', filteredEmployees.length);
         
         // Hide loading indicator
         loadingIndicator.style.opacity = '0';
@@ -661,31 +676,144 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Form submission with notification
-document.querySelector('form[action="/shifts"]').addEventListener('submit', function(e) {
+// Test form values without submitting
+function testFormValues() {
+    const addShiftForm = document.getElementById('addShiftForm');
+    if (!addShiftForm) {
+        alert('Add shift form not found!');
+        return;
+    }
+    
     const employeeId = document.getElementById('employeeId').value;
-    const shiftType = document.querySelector('select[name="shift_type"]').value;
-    const startDate = document.querySelector('input[name="schedule_start"]').value;
-    const endDate = document.querySelector('input[name="schedule_end"]').value;
+    const shiftTypeSelect = addShiftForm.querySelector('select[name="shift_type"]');
+    const shiftType = shiftTypeSelect ? shiftTypeSelect.value : '';
+    const shiftTypeSelectedIndex = shiftTypeSelect ? shiftTypeSelect.selectedIndex : -1;
+    const startDate = addShiftForm.querySelector('input[name="schedule_start"]').value;
+    const endDate = addShiftForm.querySelector('input[name="schedule_end"]').value;
+    const selectedDays = addShiftForm.querySelectorAll('input[name="days[]"]:checked');
     
-    // Validation
-    if (!employeeId) {
+    console.log('🧪 TESTING FORM VALUES:');
+    console.log('Add Shift Form Found:', !!addShiftForm);
+    console.log('Employee ID:', employeeId);
+    console.log('Shift Type:', shiftType);
+    console.log('Shift Type Selected Index:', shiftTypeSelectedIndex);
+    console.log('Shift Type Select Exists:', !!shiftTypeSelect);
+    console.log('Shift Type Options:', shiftTypeSelect ? Array.from(shiftTypeSelect.options).map((opt, index) => ({
+        index: index,
+        value: opt.value, 
+        text: opt.text, 
+        selected: opt.selected
+    })) : []);
+    console.log('Start Date:', startDate);
+    console.log('End Date:', endDate);
+    console.log('Selected Days:', Array.from(selectedDays).map(cb => cb.value));
+    console.log('Selected Days Count:', selectedDays.length);
+    
+    // Test each validation
+    const issues = [];
+    if (!employeeId || employeeId.trim() === '') issues.push('❌ Employee not selected');
+    else issues.push('✅ Employee selected: ' + employeeId);
+    
+    if (!shiftTypeSelect) issues.push('❌ Shift type dropdown not found in add form');
+    else if (shiftTypeSelectedIndex <= 0) issues.push('❌ Shift type not selected (index: ' + shiftTypeSelectedIndex + ')');
+    else if (!shiftType || shiftType.trim() === '' || shiftType === 'Select Shift Type') issues.push('❌ Invalid shift type value: "' + shiftType + '"');
+    else issues.push('✅ Shift type selected: ' + shiftType);
+    
+    if (!startDate || startDate.trim() === '') issues.push('❌ Start time not selected');
+    else issues.push('✅ Start time selected: ' + startDate);
+    
+    if (!endDate || endDate.trim() === '') issues.push('❌ End time not selected');
+    else issues.push('✅ End time selected: ' + endDate);
+    
+    if (selectedDays.length === 0) issues.push('❌ No working days selected');
+    else issues.push('✅ Working days selected: ' + Array.from(selectedDays).map(cb => cb.value).join(', '));
+    
+    alert('Form Validation Test:\n\n' + issues.join('\n'));
+}
+
+// Form submission with notification
+document.getElementById('addShiftForm').addEventListener('submit', function(e) {
+    console.log('=== FORM SUBMISSION STARTED ===');
+    
+    const addShiftForm = document.getElementById('addShiftForm');
+    const employeeId = document.getElementById('employeeId').value;
+    const shiftTypeSelect = addShiftForm.querySelector('select[name="shift_type"]');
+    const shiftType = shiftTypeSelect ? shiftTypeSelect.value : '';
+    const shiftTypeSelectedIndex = shiftTypeSelect ? shiftTypeSelect.selectedIndex : -1;
+    const startDate = addShiftForm.querySelector('input[name="schedule_start"]').value;
+    const endDate = addShiftForm.querySelector('input[name="schedule_end"]').value;
+    const selectedDays = addShiftForm.querySelectorAll('input[name="days[]"]:checked');
+    
+    console.log('Form data:', { 
+        addShiftFormFound: !!addShiftForm,
+        employeeId, 
+        shiftType, 
+        shiftTypeSelectedIndex,
+        shiftTypeSelectExists: !!shiftTypeSelect,
+        shiftTypeOptions: shiftTypeSelect ? Array.from(shiftTypeSelect.options).map((opt, index) => ({
+            index: index,
+            value: opt.value, 
+            text: opt.text, 
+            selected: opt.selected
+        })) : [],
+        startDate, 
+        endDate, 
+        selectedDaysCount: selectedDays.length,
+        selectedDays: Array.from(selectedDays).map(cb => cb.value)
+    });
+    
+    // Validation - check each field specifically
+    if (!employeeId || employeeId.trim() === '') {
+        console.log('❌ Validation failed: No employee selected');
         e.preventDefault();
-        showNotification('Please select an employee', 'error');
+        alert('Please select an employee from the search results');
         return;
     }
     
-    if (!shiftType) {
+    // Check shift type more thoroughly
+    if (!shiftTypeSelect) {
+        console.log('❌ Validation failed: Shift type select element not found in add form');
         e.preventDefault();
-        showNotification('Please select a shift type', 'error');
+        alert('Shift type dropdown not found');
         return;
     }
     
-    if (!startDate || !endDate) {
+    if (shiftTypeSelectedIndex <= 0) {
+        console.log('❌ Validation failed: No shift type selected (index: ' + shiftTypeSelectedIndex + ')');
         e.preventDefault();
-        showNotification('Please select schedule dates', 'error');
+        alert('Please select a shift type from the dropdown');
         return;
     }
+    
+    if (!shiftType || shiftType.trim() === '' || shiftType === 'Select Shift Type') {
+        console.log('❌ Validation failed: Invalid shift type value: "' + shiftType + '"');
+        e.preventDefault();
+        alert('Please select a valid shift type');
+        return;
+    }
+    
+    if (!startDate || startDate.trim() === '') {
+        console.log('❌ Validation failed: No start time selected');
+        e.preventDefault();
+        alert('Please select a start time');
+        return;
+    }
+    
+    if (!endDate || endDate.trim() === '') {
+        console.log('❌ Validation failed: No end time selected');
+        e.preventDefault();
+        alert('Please select an end time');
+        return;
+    }
+    
+    if (selectedDays.length === 0) {
+        console.log('❌ Validation failed: No working days selected');
+        e.preventDefault();
+        alert('Please select at least one working day (Monday-Sunday)');
+        return;
+    }
+    
+    console.log('✅ All validation passed, submitting form...');
     
     // Show loading notification
     showNotification('Creating schedule...', 'info');

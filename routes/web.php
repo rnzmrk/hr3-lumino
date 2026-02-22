@@ -31,7 +31,28 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/timesheets-report', [TimesheetController::class, 'report'])->name('timesheets.report');
     Route::get('/schedule-management', [ShiftController::class, 'showSchedule'])->name('schedule.management');
     Route::get('/schedule-management/export', [ShiftController::class, 'exportCsv'])->name('schedule.management.export');
-    Route::get('/overtime', [OvertimeController::class, 'index'])->name('overtime.index');
+    Route::post('/shifts', [ShiftController::class, 'store'])->name('shifts.store');
+    Route::get('/test-shift', function() {
+        try {
+            $employee = \App\Models\Employee::first();
+            if (!$employee) {
+                return 'No employees found';
+            }
+            
+            $shift = \App\Models\Shift::create([
+                'employee_id' => $employee->id,
+                'employee_name' => $employee->employee_name,
+                'shift_type' => 'Morning Shift',
+                'schedule_start' => '09:00',
+                'schedule_end' => '17:00',
+                'days' => 'Monday, Tuesday, Wednesday',
+            ]);
+            
+            return 'Shift created successfully with ID: ' . $shift->id;
+        } catch (\Exception $e) {
+            return 'Error: ' . $e->getMessage();
+        }
+    });
     Route::get('/overtime/export', [OvertimeController::class, 'exportCsv'])->name('overtime.export');
     Route::get('/claims-reimbursement', [ClaimsController::class, 'index'])->name('claims.index');
     Route::get('/claims/create', [ClaimsController::class, 'create'])->name('claims.create');
