@@ -5,7 +5,9 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ClaimsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\OvertimeController;
+use App\Http\Controllers\OvertimeRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ShiftController;
@@ -38,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/claims/{claim}', [ClaimsController::class, 'update'])->name('claims.update');
     Route::delete('/claims/{claim}', [ClaimsController::class, 'destroy'])->name('claims.destroy');
     Route::get('/claims/export', [ClaimsController::class, 'exportCsv'])->name('claims.export');
+    Route::put('/claims/{claim}/status', [ClaimsController::class, 'updateStatus'])->name('claims.update.status');
     
     // Leave routes
     Route::get('/manage-leave', [LeaveController::class, 'manageLeave'])->name('leaves.manage');
@@ -49,10 +52,36 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/leaves/{leaveRequest}', [LeaveController::class, 'update'])->name('leaves.update');
     Route::delete('/leaves/{leaveRequest}', [LeaveController::class, 'destroy'])->name('leaves.destroy');
     Route::get('/leaves/export', [LeaveController::class, 'exportCsv'])->name('leaves.export');
+    Route::put('/leave-requests/{leaveRequest}/status', [LeaveController::class, 'updateStatus'])->name('leave-requests.update.status');
+    
+    // Test route for debugging
+    Route::get('/test-status', function() {
+        return response()->json(['message' => 'Test route works']);
+    });
+    
+    // Leave Type routes
+    Route::get('/leave-types', [LeaveTypeController::class, 'index'])->name('leave-types.index');
+    Route::get('/leave-types/create', [LeaveTypeController::class, 'create'])->name('leave-types.create');
+    Route::post('/leave-types', [LeaveTypeController::class, 'store'])->name('leave-types.store');
+    Route::get('/leave-types/{leave}', [LeaveTypeController::class, 'show'])->name('leave-types.show');
+    Route::get('/leave-types/{leave}/edit', [LeaveTypeController::class, 'edit'])->name('leave-types.edit');
+    Route::put('/leave-types/{leave}', [LeaveTypeController::class, 'update'])->name('leave-types.update');
+    Route::delete('/leave-types/{leave}', [LeaveTypeController::class, 'destroy'])->name('leave-types.destroy');
     
     // Overtime routes
-    Route::put('/overtime-requests/{attendance}/update', [OvertimeController::class, 'updateOvertimeRequest']);
-    Route::put('/overtime-requests/{attendance}/status', [OvertimeController::class, 'updateStatus'])->name('overtime.update.status');
+    Route::put('/overtime/{attendance}/update', [OvertimeController::class, 'updateOvertimeRequest']);
+    Route::put('/overtime/{attendance}/status', [OvertimeController::class, 'updateStatus'])->name('overtime.update.status');
+    
+    // Overtime Request routes
+    Route::get('/overtime-requests', [OvertimeRequestController::class, 'index'])->name('overtime-requests.index');
+    Route::get('/overtime-requests/create', [OvertimeRequestController::class, 'create'])->name('overtime-requests.create');
+    Route::post('/overtime-requests', [OvertimeRequestController::class, 'store'])->name('overtime-requests.store');
+    Route::get('/overtime-requests/{overtimeRequest}', [OvertimeRequestController::class, 'show'])->name('overtime-requests.show');
+    Route::get('/overtime-requests/{overtimeRequest}/edit', [OvertimeRequestController::class, 'edit'])->name('overtime-requests.edit');
+    Route::put('/overtime-requests/{overtimeRequest}', [OvertimeRequestController::class, 'update'])->name('overtime-requests.update');
+    Route::delete('/overtime-requests/{overtimeRequest}', [OvertimeRequestController::class, 'destroy'])->name('overtime-requests.destroy');
+    Route::put('/overtime-requests/{overtimeRequest}/status', [OvertimeRequestController::class, 'updateStatus'])->name('overtime-requests.update.status');
+    Route::get('/overtime-requests/export', [OvertimeRequestController::class, 'exportCsv'])->name('overtime-requests.export');
     
     // Attendance routes
     Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
@@ -85,4 +114,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Audit routes
+    Route::get('/audit-logs', [\App\Http\Controllers\AuditController::class, 'index'])->name('audit.index');
+    Route::get('/audit-logs/create', [\App\Http\Controllers\AuditController::class, 'create'])->name('audit.create');
+    Route::post('/audit-logs', [\App\Http\Controllers\AuditController::class, 'store'])->name('audit.store');
+    Route::get('/audit-logs/{user}/edit', [\App\Http\Controllers\AuditController::class, 'edit'])->name('audit.edit');
+    Route::put('/audit-logs/{user}', [\App\Http\Controllers\AuditController::class, 'update'])->name('audit.update');
+    Route::delete('/audit-logs/{user}', [\App\Http\Controllers\AuditController::class, 'destroy'])->name('audit.destroy');
 });

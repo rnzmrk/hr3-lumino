@@ -4,39 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class LeaveRequest extends Model
+class OvertimeRequest extends Model
 {
     protected $fillable = [
         'employee_name',
-        'position',
-        'leave_type',
         'reason',
-        'leave_dates',
+        'date',
+        'hours',
         'status',
         'admin_notes'
     ];
 
     protected $casts = [
-        'leave_dates' => 'array',
+        'date' => 'date',
+        'hours' => 'decimal:2'
     ];
-
-    // Get leave dates as formatted array
-    public function getFormattedDatesAttribute()
-    {
-        if (!$this->leave_dates) {
-            return [];
-        }
-        
-        return collect($this->leave_dates)->map(function($date) {
-            return \Carbon\Carbon::parse($date)->format('M d, Y');
-        })->toArray();
-    }
-
-    // Get leave type label
-    public function getLeaveTypeLabelAttribute()
-    {
-        return $this->leave_type ?: 'Not Specified';
-    }
 
     // Get status label
     public function getStatusLabelAttribute()
@@ -60,11 +42,5 @@ class LeaveRequest extends Model
         ];
         
         return $classes[$this->status] ?? 'bg-gray-100 text-gray-800';
-    }
-
-    // Get leave type badge class
-    public function getLeaveTypeBadgeClassAttribute()
-    {
-        return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
 }

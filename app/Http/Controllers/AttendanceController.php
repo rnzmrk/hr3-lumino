@@ -36,16 +36,22 @@ class AttendanceController extends Controller
         
         $attendance = $query->orderBy('date', 'desc')->orderBy('employee_name')->paginate(10);
         
-        // Get the date to use for statistics (either filtered date or today)
-        $statsDate = $request->filled('date') ? $request->input('date') : now()->format('Y-m-d');
+        // Get statistics based on today's date (always)
+        $todayDate = now()->format('Y-m-d');
+        $presentCount = Attendance::whereDate('date', $todayDate)->where('status', 'present')->count();
+        $absentCount = Attendance::whereDate('date', $todayDate)->where('status', 'absent')->count();
+        $lateCount = Attendance::whereDate('date', $todayDate)->where('status', 'late')->count();
+        $onLeaveCount = Attendance::whereDate('date', $todayDate)->where('status', 'leave')->count();
         
-        // Get statistics based on the selected date
-        $presentCount = Attendance::whereDate('date', $statsDate)->where('status', 'present')->count();
-        $absentCount = Attendance::whereDate('date', $statsDate)->where('status', 'absent')->count();
-        $lateCount = Attendance::whereDate('date', $statsDate)->where('status', 'late')->count();
-        $onLeaveCount = Attendance::whereDate('date', $statsDate)->where('status', 'leave')->count();
+        // Create stats array for the view
+        $stats = [
+            'present' => $presentCount,
+            'absent' => $absentCount,
+            'late' => $lateCount,
+            'leave' => $onLeaveCount
+        ];
         
-        return view('admin.attendance.attendance', compact('attendance', 'presentCount', 'absentCount', 'lateCount', 'onLeaveCount'));
+        return view('admin.attendance.attendance', compact('attendance', 'stats'));
     }
     
     /**

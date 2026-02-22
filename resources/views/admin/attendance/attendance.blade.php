@@ -11,63 +11,67 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">Present {{ request('date') ? 'on ' . \Carbon\Carbon::parse(request('date'))->format('M j') : 'Today' }}</p>
-                    <p class="text-3xl font-bold text-slate-900 mt-2">{{ $presentCount }}</p>
-                    <p class="text-xs text-slate-500 mt-1">Employees present</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-600">Present Today</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $stats['present'] ?? 0 }}</p>
                 </div>
-                <div class="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">Absent {{ request('date') ? 'on ' . \Carbon\Carbon::parse(request('date'))->format('M j') : 'Today' }}</p>
-                    <p class="text-3xl font-bold text-slate-900 mt-2">{{ $absentCount }}</p>
-                    <p class="text-xs text-slate-500 mt-1">Employees absent</p>
-                </div>
-                <div class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+                <div class="ml-4">
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">On Leave {{ request('date') ? 'on ' . \Carbon\Carbon::parse(request('date'))->format('M j') : 'Today' }}</p>
-                    <p class="text-3xl font-bold text-slate-900 mt-2">{{ $onLeaveCount }}</p>
-                    <p class="text-xs text-slate-500 mt-1">Employees on leave</p>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-600">Absent Today</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $stats['absent'] ?? 0 }}</p>
                 </div>
-                <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
+                <div class="ml-4">
+                    <div class="p-3 bg-red-100 rounded-full">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-slate-600">Late {{ request('date') ? 'on ' . \Carbon\Carbon::parse(request('date'))->format('M j') : 'Today' }}</p>
-                    <p class="text-3xl font-bold text-slate-900 mt-2">{{ $lateCount }}</p>
-                    <p class="text-xs text-slate-500 mt-1">Employees late</p>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-600">Late Today</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $stats['late'] ?? 0 }}</p>
                 </div>
-                <div class="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                <div class="ml-4">
+                    <div class="p-3 bg-amber-100 rounded-full">
+                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-600">On Leave</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $stats['leave'] ?? 0 }}</p>
+                </div>
+                <div class="ml-4">
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
@@ -79,7 +83,17 @@
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-3">
                     <input type="date" name="date" value="{{ request('date') }}" class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Date">
-                    <input type="text" name="employee_search" value="{{ request('employee_search') }}" placeholder="Search employee..." class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]">
+                    <!-- Live Search - Separate from form submission -->
+                    <div class="relative">
+                        <input type="text" id="liveAttendanceSearch" value="{{ request('employee_search') }}" placeholder="🔍 Live search employee (type instantly)..." class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[280px] bg-blue-50 border-blue-200">
+                        <div id="searchIndicator" class="absolute right-3 top-2.5 text-blue-500 opacity-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <!-- Hidden field for form submission -->
+                    <input type="hidden" name="employee_search" id="hiddenEmployeeSearch" value="{{ request('employee_search') }}">
                     <button type="submit" class="px-3 py-2 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition-colors duration-200 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -97,7 +111,7 @@
                 </div>
                 <div class="flex gap-2">
                     <a href="{{ route('attendance.export') }}?{{ request()->getQueryString() }}" 
-                       class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2">
+                       class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
@@ -185,19 +199,19 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
 
         <!-- Pagination -->
         {{ $attendance->links() }}
     </div>
 </div>
-@endsection
 
 <!-- Attendance Modal -->
 <div id="attendanceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
         <div class="p-6 border-b border-slate-200">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-slate-900">Mark Attendance</h3>
+                <h3 class="text-lg font-semibold text-slate-900">Attendance</h3>
                 <button onclick="closeAttendanceModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -214,13 +228,18 @@
                     <label class="block text-sm font-medium text-slate-700 mb-2">Search Employee</label>
                     <div class="relative">
                         <input type="text" id="employeeSearch" name="employee_search" 
-                               class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                               placeholder="Type employee name or ID..." autocomplete="off">
+                               class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50 border-blue-200" 
+                               placeholder="🔍 Live search employee (type 1 letter)..." autocomplete="off">
+                        <div id="searchLoadingIndicator" class="absolute right-3 top-2.5 text-blue-500 opacity-0 transition-opacity duration-200">
+                            <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </div>
                         <div id="employeeResults" class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto"></div>
                     </div>
                 </div>
                 
-                <!-- Hidden Employee Fields -->
+                <!-- Hidden fields for employee data -->
                 <input type="hidden" id="employeeId" name="employee_id">
                 <input type="hidden" id="employeeName" name="employee_name">
                 
@@ -234,7 +253,7 @@
                 <!-- Check In -->
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Check In</label>
-                    <input type="time" id="checkIn" name="check_in"
+                    <input type="time" id="checkIn" name="check_in" required
                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 
@@ -245,17 +264,10 @@
                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 
-                <!-- Overtime -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Overtime</label>
-                    <input type="time" id="overtime" name="overtime"
-                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                
                 <!-- Status -->
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
-                    <select id="status" name="status" 
+                    <select id="status" name="status" required
                             class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Select Status</option>
                         <option value="present">Present</option>
@@ -283,8 +295,16 @@
 let selectedEmployee = null;
 
 function openAttendanceModal() {
-    document.getElementById('attendanceModal').classList.remove('hidden');
+    document.querySelector('#attendanceModal h3').textContent = 'Mark Attendance';
+    document.getElementById('attendanceForm').action = '/attendance';
+    document.querySelector('#attendanceForm button[type="submit"]').textContent = 'Save Attendance';
+    document.getElementById('attendanceForm').reset();
+    document.getElementById('employeeResults').classList.add('hidden');
+    selectedEmployee = null;
+    
     document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('attendanceModal').classList.remove('hidden');
 }
 
 function closeAttendanceModal() {
@@ -294,35 +314,56 @@ function closeAttendanceModal() {
     selectedEmployee = null;
 }
 
-// Employee search functionality
 document.getElementById('employeeSearch').addEventListener('input', function(e) {
     const search = e.target.value.trim();
     const resultsDiv = document.getElementById('employeeResults');
+    const loadingIndicator = document.getElementById('searchLoadingIndicator');
     
-    if (search.length < 2) {
+    if (search.length < 1) {
         resultsDiv.classList.add('hidden');
+        loadingIndicator.style.opacity = '0';
         return;
     }
     
-    fetch(`/employees/search-attendance?search=${encodeURIComponent(search)}`)
-        .then(response => response.json())
-        .then(employees => {
-            if (employees.length === 0) {
-                resultsDiv.innerHTML = '<div class="p-3 text-sm text-slate-500">No employees found</div>';
-            } else {
-                resultsDiv.innerHTML = employees.map(emp => `
-                    <div onclick="selectEmployee(${emp.id}, '${emp.employee_name}')" 
-                         class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0">
-                        <div class="font-medium text-slate-900">${emp.employee_name}</div>
-                        <div class="text-sm text-slate-500">ID: ${emp.id} | ${emp.position} | ${emp.department}</div>
-                    </div>
-                `).join('');
-            }
-            resultsDiv.classList.remove('hidden');
-        })
-        .catch(error => {
-            console.error('Error searching employees:', error);
-        });
+    if (window.employeeSearchTimeout) {
+        clearTimeout(window.employeeSearchTimeout);
+    }
+    
+    loadingIndicator.style.opacity = '1';
+    
+    window.employeeSearchTimeout = setTimeout(() => {
+        fetch(`/employees/search-attendance?search=${encodeURIComponent(search)}`)
+            .then(response => response.json())
+            .then(employees => {
+                loadingIndicator.style.opacity = '0';
+                
+                if (employees.length === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="p-3 text-sm text-slate-500">
+                            No employees found for "${search}"
+                            <button onclick="loadAllEmployees()" class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                                Show all employees
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = employees.map(emp => `
+                        <div onclick="selectEmployee(${emp.id}, '${emp.employee_name}')" 
+                             class="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-b-0">
+                            <div class="font-medium text-slate-900">${emp.employee_name}</div>
+                            <div class="text-sm text-slate-500">ID: ${emp.id} | ${emp.position} | ${emp.department}</div>
+                        </div>
+                    `).join('');
+                }
+                resultsDiv.classList.remove('hidden');
+            })
+            .catch(error => {
+                loadingIndicator.style.opacity = '0';
+                console.error('Error searching employees:', error);
+                resultsDiv.innerHTML = `<div class="p-3 text-sm text-red-500">Error searching employees</div>`;
+                resultsDiv.classList.remove('hidden');
+            });
+    }, 300);
 });
 
 function selectEmployee(id, name) {
@@ -331,21 +372,110 @@ function selectEmployee(id, name) {
     document.getElementById('employeeName').value = name;
     document.getElementById('employeeSearch').value = name;
     document.getElementById('employeeResults').classList.add('hidden');
+    document.getElementById('searchLoadingIndicator').style.opacity = '0';
 }
 
-// Close dropdown when clicking outside
+function loadAllEmployees() {
+    const resultsDiv = document.getElementById('employeeResults');
+    const loadingIndicator = document.getElementById('searchLoadingIndicator');
+    
+    loadingIndicator.style.opacity = '1';
+    
+    fetch(`/employees/search-attendance?search=`)
+        .then(response => response.json())
+        .then(employees => {
+            loadingIndicator.style.opacity = '0';
+            
+            if (employees.length === 0) {
+                resultsDiv.innerHTML = '<div class="p-3 text-sm text-slate-500">No employees found</div>';
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="p-2 text-xs text-slate-500 border-b border-slate-100">All Employees (${employees.length})</div>
+                    ${employees.map(emp => `
+                        <div onclick="selectEmployee(${emp.id}, '${emp.employee_name}')" 
+                             class="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-b-0">
+                            <div class="font-medium text-slate-900">${emp.employee_name}</div>
+                            <div class="text-sm text-slate-500">ID: ${emp.id} | ${emp.position} | ${emp.department}</div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+            resultsDiv.classList.remove('hidden');
+        })
+        .catch(error => {
+            loadingIndicator.style.opacity = '0';
+            console.error('Error loading all employees:', error);
+            resultsDiv.innerHTML = '<div class="p-3 text-sm text-red-500">Error loading employees</div>';
+            resultsDiv.classList.remove('hidden');
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('liveAttendanceSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('tbody tr');
+            
+            const hiddenField = document.getElementById('hiddenEmployeeSearch');
+            if (hiddenField) {
+                hiddenField.value = this.value;
+            }
+            
+            let visibleCount = 0;
+            
+            tableRows.forEach((row, index) => {
+                const employeeName = row.cells[0] ? row.cells[0].textContent.toLowerCase() : '';
+                
+                if (employeeName.includes(searchTerm)) {
+                    row.style.display = '';
+                    row.classList.remove('hidden');
+                    row.classList.add('bg-green-50', 'border-l-4', 'border-green-500');
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                    row.classList.add('hidden');
+                    row.classList.remove('bg-green-50', 'border-l-4', 'border-green-500');
+                }
+            });
+            
+            let resultsCounter = document.getElementById('attendanceSearchResults');
+            if (!resultsCounter) {
+                resultsCounter = document.createElement('div');
+                resultsCounter.id = 'attendanceSearchResults';
+                resultsCounter.className = 'text-sm font-medium mt-2 mb-4 p-3 rounded-lg border transition-all duration-200';
+                
+                const filtersSection = document.querySelector('.bg-white.rounded-xl.shadow-sm.border.border-slate-200.p-6.mb-6');
+                if (filtersSection) {
+                    filtersSection.after(resultsCounter);
+                }
+            }
+            
+            if (searchTerm === '') {
+                resultsCounter.textContent = '';
+                resultsCounter.classList.remove('bg-blue-50', 'border-blue-200', 'text-blue-700');
+                tableRows.forEach(row => {
+                    row.classList.remove('bg-green-50', 'border-l-4', 'border-green-500');
+                });
+            } else {
+                resultsCounter.textContent = `🔍 Found ${visibleCount} employees containing "${this.value}"`;
+                resultsCounter.classList.add('bg-blue-50', 'border-blue-200', 'text-blue-700');
+            }
+        });
+    }
+});
+
 document.addEventListener('click', function(e) {
     if (!e.target.closest('#employeeSearch') && !e.target.closest('#employeeResults')) {
         document.getElementById('employeeResults').classList.add('hidden');
     }
 });
 
-// Form submission
 document.getElementById('attendanceForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     if (!selectedEmployee) {
-        alert('Please select an employee');
+        showNotification('Please select an employee', 'error');
         return;
     }
     
@@ -362,15 +492,53 @@ document.getElementById('attendanceForm').addEventListener('submit', function(e)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            showNotification('Attendance created successfully!', 'success');
             closeAttendanceModal();
-            location.reload(); // Reload to show new attendance record
+            location.reload();
         } else {
-            alert(data.message || 'Error saving attendance');
+            showNotification(data.message || 'Error saving attendance', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error saving attendance');
+        showNotification('Error saving attendance', 'error');
     });
 });
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full`;
+    
+    const colors = {
+        success: 'bg-green-100 border border-green-400 text-green-700',
+        error: 'bg-red-100 border border-red-400 text-red-700',
+        info: 'bg-blue-100 border border-blue-400 text-blue-700'
+    };
+    
+    notification.classList.add(...colors[type].split(' '));
+    
+    const icons = {
+        success: '<svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        error: '<svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        info: '<svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+    };
+    
+    notification.innerHTML = `${icons[type]}<span class="font-medium">${message}</span>`;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+        notification.classList.add('translate-x-0');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('translate-x-0');
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 5000);
+}
 </script>
+@endsection

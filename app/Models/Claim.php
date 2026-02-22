@@ -19,6 +19,7 @@ class Claim extends Model
         'date',
         'status',
         'remarks',
+        'receipt',
     ];
 
     protected $casts = [
@@ -40,6 +41,35 @@ class Claim extends Model
     public function getFormattedAmountAttribute(): string
     {
         return '₱' . number_format($this->amount, 2);
+    }
+
+    /**
+     * Get the receipt URL if it exists.
+     */
+    public function getReceiptUrlAttribute(): ?string
+    {
+        return $this->receipt ? asset('storage/receipts/' . $this->receipt) : null;
+    }
+
+    /**
+     * Get the receipt icon HTML.
+     */
+    public function getReceiptIconAttribute(): string
+    {
+        if ($this->receipt) {
+            return '<a href="' . $this->receipt_url . '" target="_blank" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1" title="View Receipt">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Receipt
+                    </a>';
+        }
+        return '<span class="text-gray-400 inline-flex items-center gap-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    No Receipt
+                </span>';
     }
 
     /**

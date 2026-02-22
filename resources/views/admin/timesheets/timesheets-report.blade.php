@@ -16,10 +16,11 @@
         <div class="flex flex-wrap items-center gap-4">
             <!-- Employee Search Bar -->
             <div class="relative flex-1 min-w-[300px] max-w-md">
-                <input type="text" id="employeeSearch" placeholder="Search employee by name or ID..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <input type="text" id="employeeSearch" placeholder="🔍 Live search employee (type instantly)..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50 border-blue-200">
+                <svg class="absolute left-3 top-2.5 w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
+                <div id="employeeResults" class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto"></div>
             </div>
             
             <!-- Date Range Filters -->
@@ -173,10 +174,7 @@ function updateSummaryCards(data) {
 // Employee search functionality
 document.addEventListener('DOMContentLoaded', function() {
     const employeeSearch = document.getElementById('employeeSearch');
-    const resultsDiv = document.createElement('div');
-    resultsDiv.className = 'absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto';
-    resultsDiv.id = 'employeeResults';
-    employeeSearch.parentElement.appendChild(resultsDiv);
+    const resultsDiv = document.getElementById('employeeResults');
     
     // Set default date range (current month)
     function setDefaultDateRange() {
@@ -191,33 +189,47 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize default dates on page load
     setDefaultDateRange();
     
-    // Employee search autocomplete
+    // Employee search autocomplete - Live search as you type
     employeeSearch.addEventListener('input', function(e) {
         const search = e.target.value.trim();
         
-        if (search.length < 2) {
+        if (search.length < 1) {
             resultsDiv.classList.add('hidden');
             return;
         }
+        
+        // Show loading indicator
+        resultsDiv.innerHTML = '<div class="p-3 text-sm text-blue-600">🔍 Searching...</div>';
+        resultsDiv.classList.remove('hidden');
         
         fetch(`/employees/search-report?search=${encodeURIComponent(search)}`)
             .then(response => response.json())
             .then(employees => {
                 if (employees.length === 0) {
-                    resultsDiv.innerHTML = '<div class="p-3 text-sm text-slate-500">No employees found</div>';
-                } else {
-                    resultsDiv.innerHTML = employees.map(emp => `
-                        <div onclick="selectEmployee('${emp.employee_name}')" 
-                             class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0">
-                            <div class="font-medium text-slate-900">${emp.employee_name}</div>
-                            <div class="text-sm text-slate-500">ID: ${emp.id} | ${emp.position} | ${emp.department}</div>
+                    resultsDiv.innerHTML = `
+                        <div class="p-3 text-sm text-slate-500">
+                            No employees found for "${search}"
+                            <button onclick="loadAllEmployees()" class="ml-2 text-blue-600 hover:text-blue-800 underline text-xs">
+                                Show all employees
+                            </button>
                         </div>
-                    `).join('');
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="p-2 text-xs text-slate-500 border-b border-slate-100">Found ${employees.length} employees</div>
+                        ${employees.map(emp => `
+                            <div onclick="selectEmployee('${emp.employee_name}')" 
+                                 class="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-b-0">
+                                <div class="font-medium text-slate-900">${emp.employee_name}</div>
+                                <div class="text-sm text-slate-500">ID: ${emp.id} | ${emp.position} | ${emp.department}</div>
+                            </div>
+                        `).join('')}
+                    `;
                 }
-                resultsDiv.classList.remove('hidden');
             })
             .catch(error => {
                 console.error('Error searching employees:', error);
+                resultsDiv.innerHTML = '<div class="p-3 text-sm text-red-500">Error searching employees</div>';
             });
     });
     
@@ -227,44 +239,49 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsDiv.classList.add('hidden');
     };
     
+    // Load all employees function
+    window.loadAllEmployees = function() {
+        resultsDiv.innerHTML = '<div class="p-3 text-sm text-blue-600">🔍 Loading all employees...</div>';
+        
+        fetch(`/employees/search-report?search=`)
+            .then(response => response.json())
+            .then(employees => {
+                if (employees.length === 0) {
+                    resultsDiv.innerHTML = '<div class="p-3 text-sm text-slate-500">No employees found</div>';
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="p-2 text-xs text-slate-500 border-b border-slate-100">All Employees (${employees.length})</div>
+                        ${employees.map(emp => `
+                            <div onclick="selectEmployee('${emp.employee_name}')" 
+                                 class="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-b-0">
+                                <div class="font-medium text-slate-900">${emp.employee_name}</div>
+                                <div class="text-sm text-slate-500">ID: ${emp.id} | ${emp.position} | ${emp.department}</div>
+                            </div>
+                        `).join('')}
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading all employees:', error);
+                resultsDiv.innerHTML = '<div class="p-3 text-sm text-red-500">Error loading employees</div>';
+            });
+    };
+    
     // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('#employeeSearch') && !e.target.closest('#employeeResults')) {
             resultsDiv.classList.add('hidden');
         }
     });
+    
+    // Allow search on Enter key
+    document.getElementById('employeeSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchEmployee();
+        }
+    });
 });
-
-// Set month filter function
-function setMonthFilter() {
-    const filter = document.getElementById('monthFilter').value;
-    const today = new Date();
-    let fromDate, toDate;
-    
-    switch(filter) {
-        case 'current':
-            fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-            toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            break;
-        case 'last':
-            fromDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            toDate = new Date(today.getFullYear(), today.getMonth(), 0);
-            break;
-        case '2months':
-            fromDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            break;
-        case '3months':
-            fromDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-            toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            break;
-        default:
-            return;
-    }
-    
-    document.getElementById('fromDate').value = fromDate.toISOString().split('T')[0];
-    document.getElementById('toDate').value = toDate.toISOString().split('T')[0];
-}
 
 // Search employee report
 function searchEmployee() {
@@ -369,17 +386,6 @@ function searchEmployee() {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-slate-50';
                 
-                let statusBadge = '';
-                if (record.status === 'present') {
-                    statusBadge = '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">Present</span>';
-                } else if (record.status === 'late') {
-                    statusBadge = '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">Late</span>';
-                } else if (record.status === 'absent') {
-                    statusBadge = '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Absent</span>';
-                } else {
-                    statusBadge = '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800">' + record.status + '</span>';
-                }
-                
                 row.innerHTML = `
                     <td class="px-3 py-2 whitespace-nowrap text-sm text-slate-900">${record.date}</td>
                     <td class="px-3 py-2 whitespace-nowrap text-sm text-slate-600">${record.day}</td>
@@ -457,12 +463,5 @@ function exportToCSV() {
     link.click();
     document.body.removeChild(link);
 }
-
-// Allow search on Enter key
-document.getElementById('employeeSearch').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        searchEmployee();
-    }
-});
 </script>
 @endsection

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\LeaveRequest;
+use App\Models\Leave;
 
 class LeaveController extends Controller
 {
@@ -61,7 +62,8 @@ class LeaveController extends Controller
      */
     public function create()
     {
-        return view('admin.leaves.create-leave');
+        $leaveTypes = Leave::all();
+        return view('admin.leaves.create-leave', compact('leaveTypes'));
     }
 
     /**
@@ -90,7 +92,7 @@ class LeaveController extends Controller
         $request->validate([
             'employee_name' => 'required|string|max:255',
             'position' => 'required|string|max:255',
-            'leave_type' => 'required|in:sick,vacation,personal,maternity,emergency',
+            'leave_type' => 'required|string|max:255',
             'reason' => 'required|string|max:1000',
             'leave_dates' => 'required|array|min:1',
             'leave_dates.*' => 'required|date'

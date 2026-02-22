@@ -23,10 +23,17 @@
                         <label class="block text-sm font-medium text-slate-700 mb-1">To</label>
                         <input type="date" name="to_date" value="{{ request('to_date') }}" class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="To Date">
                     </div>
+                    <!-- Live Search - Separate from form submission -->
                     <div class="relative">
-                        <input type="text" name="employee_search" value="{{ request('employee_search') }}" placeholder="Search employee..." class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]" autocomplete="off">
-                        <div id="employeeResults" class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto"></div>
+                        <input type="text" id="liveTimesheetSearch" value="{{ request('employee_search') }}" placeholder="🔍 Live search employee (type instantly)..." class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[280px] bg-blue-50 border-blue-200">
+                        <div id="searchIndicator" class="absolute right-3 top-2.5 text-blue-500 opacity-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
                     </div>
+                    <!-- Hidden field for form submission -->
+                    <input type="hidden" name="employee_search" id="hiddenEmployeeSearch" value="{{ request('employee_search') }}">
                     <button type="submit" class="px-3 py-2 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition-colors duration-200 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -188,45 +195,58 @@
 @endsection
 
 <script>
-// Employee search functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const employeeSearch = document.querySelector('input[name="employee_search"]');
-    const resultsDiv = document.getElementById('employeeResults');
-    
-    if (employeeSearch && resultsDiv) {
-        employeeSearch.addEventListener('input', function(e) {
-            const search = e.target.value.trim();
+    const liveSearchInput = document.getElementById('liveTimesheetSearch');
+    if (liveSearchInput) {
+        liveSearchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('tbody tr');
             
-            if (search.length < 2) {
-                resultsDiv.classList.add('hidden');
-                return;
+            const hiddenField = document.getElementById('hiddenEmployeeSearch');
+            if (hiddenField) {
+                hiddenField.value = this.value;
             }
             
-            fetch(`/employees/search-timesheet?search=${encodeURIComponent(search)}`)
-                .then(response => response.json())
-                .then(employees => {
-                    if (employees.length === 0) {
-                        resultsDiv.innerHTML = '<div class="p-3 text-sm text-slate-500">No employees found</div>';
-                    } else {
-                        resultsDiv.innerHTML = employees.map(emp => `
-                            <div onclick="selectEmployee('${emp.employee_name}')" 
-                                 class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0">
-                                <div class="font-medium text-slate-900">${emp.employee_name}</div>
-                                <div class="text-sm text-slate-500">ID: ${emp.id} | ${emp.position} | ${emp.department}</div>
-                            </div>
-                        `).join('');
-                    }
-                    resultsDiv.classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error searching employees:', error);
+            let visibleCount = 0;
+            
+            tableRows.forEach((row, index) => {
+                const employeeName = row.cells[0] ? row.cells[0].textContent.toLowerCase() : '';
+                
+                if (employeeName.includes(searchTerm)) {
+                    row.style.display = '';
+                    row.classList.remove('hidden');
+                    row.classList.add('bg-green-50', 'border-l-4', 'border-green-500');
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                    row.classList.add('hidden');
+                    row.classList.remove('bg-green-50', 'border-l-4', 'border-green-500');
+                }
+            });
+            
+            let resultsCounter = document.getElementById('timesheetSearchResults');
+            if (!resultsCounter) {
+                resultsCounter = document.createElement('div');
+                resultsCounter.id = 'timesheetSearchResults';
+                resultsCounter.className = 'text-sm font-medium mt-2 mb-4 p-3 rounded-lg border transition-all duration-200';
+                
+                const filtersSection = document.querySelector('.bg-white.rounded-xl.shadow-sm.border.border-slate-200.p-6.mb-6');
+                if (filtersSection) {
+                    filtersSection.after(resultsCounter);
+                }
+            }
+            
+            if (searchTerm === '') {
+                resultsCounter.textContent = '';
+                resultsCounter.classList.remove('bg-blue-50', 'border-blue-200', 'text-blue-700');
+                tableRows.forEach(row => {
+                    row.classList.remove('bg-green-50', 'border-l-4', 'border-green-500');
                 });
+            } else {
+                resultsCounter.textContent = `🔍 Found ${visibleCount} employees containing "${this.value}"`;
+                resultsCounter.classList.add('bg-blue-50', 'border-blue-200', 'text-blue-700');
+            }
         });
-    }
-    
-    function selectEmployee(name) {
-        employeeSearch.value = name;
-        resultsDiv.classList.add('hidden');
     }
     
     // Add overtime hour function

@@ -111,6 +111,7 @@ class ClaimsController extends Controller
             'description' => 'required|string|max:1000',
             'amount' => 'required|numeric|min:0|max:999999.99',
             'date' => 'required|date|before_or_equal:today',
+            'receipt' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:10240', // 10MB max
         ]);
 
         if ($validator->fails()) {
@@ -120,6 +121,15 @@ class ClaimsController extends Controller
         }
 
         $employee = Employee::find($request->employee_id);
+        
+        // Handle receipt upload
+        $receiptPath = null;
+        if ($request->hasFile('receipt')) {
+            $receipt = $request->file('receipt');
+            $receiptName = time() . '_' . $receipt->getClientOriginalName();
+            $receipt->move(public_path('storage/receipts'), $receiptName);
+            $receiptPath = $receiptName;
+        }
 
         Claim::create([
             'employee_id' => $request->employee_id,
@@ -129,6 +139,7 @@ class ClaimsController extends Controller
             'amount' => $request->amount,
             'date' => $request->date,
             'status' => 'pending',
+            'receipt' => $receiptPath,
         ]);
 
         return redirect()->route('claims.index')
@@ -173,6 +184,7 @@ class ClaimsController extends Controller
             'description' => 'required|string|max:1000',
             'amount' => 'required|numeric|min:0|max:999999.99',
             'date' => 'required|date|before_or_equal:today',
+            'receipt' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:10240', // 10MB max
         ]);
 
         if ($validator->fails()) {
@@ -182,6 +194,20 @@ class ClaimsController extends Controller
         }
 
         $employee = Employee::find($request->employee_id);
+        
+        // Handle receipt upload
+        $receiptPath = $claim->receipt; // Keep existing receipt
+        if ($request->hasFile('receipt')) {
+            // Delete old receipt if exists
+            if ($claim->receipt && file_exists(public_path('storage/receipts/' . $claim->receipt))) {
+                unlink(public_path('storage/receipts/' . $claim->receipt));
+            }
+            
+            $receipt = $request->file('receipt');
+            $receiptName = time() . '_' . $receipt->getClientOriginalName();
+            $receipt->move(public_path('storage/receipts'), $receiptName);
+            $receiptPath = $receiptName;
+        }
 
         $claim->update([
             'employee_id' => $request->employee_id,
@@ -190,6 +216,7 @@ class ClaimsController extends Controller
             'description' => $request->description,
             'amount' => $request->amount,
             'date' => $request->date,
+            'receipt' => $receiptPath,
         ]);
 
         return redirect()->route('claims.index')

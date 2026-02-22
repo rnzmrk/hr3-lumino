@@ -50,11 +50,9 @@
                     <select id="leave_type" name="leave_type" required
                             class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Select Leave Type</option>
-                        <option value="sick">Sick Leave</option>
-                        <option value="vacation">Vacation</option>
-                        <option value="personal">Personal</option>
-                        <option value="maternity">Maternity</option>
-                        <option value="emergency">Emergency</option>
+                        @foreach($leaveTypes as $leaveType)
+                            <option value="{{ $leaveType->leave_name }}">{{ $leaveType->leave_name }} ({{ $leaveType->leave_duration }})</option>
+                        @endforeach
                     </select>
                 </div>
 

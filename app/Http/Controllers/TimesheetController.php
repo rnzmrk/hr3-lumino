@@ -33,7 +33,7 @@ class TimesheetController extends Controller
             });
         }
         
-        $timesheets = $query->orderBy('date', 'desc')->orderBy('employee_name')->paginate(10);
+        $timesheets = $query->orderBy('date', 'desc')->orderBy('employee_name')->paginate(5);
 
         // Map computed total hours for each record (check-in to check-out only)
         $timesheets->getCollection()->transform(function ($attendance) {

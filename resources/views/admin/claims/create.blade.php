@@ -12,7 +12,7 @@
 
     <!-- Form -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200">
-        <form method="POST" action="{{ route('claims.store') }}" class="p-6">
+        <form method="POST" action="{{ route('claims.store') }}" class="p-6" enctype="multipart/form-data">
             @csrf
             
             <!-- Employee Selection -->
@@ -71,6 +71,31 @@
                 </div>
             </div>
 
+            <!-- Receipt Upload -->
+            <div class="mb-6">
+                <label for="receipt" class="block text-sm font-medium text-slate-700 mb-2">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Receipt (Optional)
+                </label>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                    <input type="file" id="receipt" name="receipt" accept="image/*,.pdf" class="hidden" onchange="handleReceiptSelect(this)">
+                    <label for="receipt" class="cursor-pointer">
+                        <div id="receiptPreview" class="mb-3">
+                            <svg class="w-12 h-12 mx-auto text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-slate-600">Click to upload receipt</p>
+                        <p class="text-xs text-slate-500 mt-1">PNG, JPG, PDF up to 10MB</p>
+                    </label>
+                </div>
+                @error('receipt')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Form Actions -->
             <div class="flex items-center justify-between">
                 <a href="{{ route('claims.index') }}" class="px-4 py-2 text-slate-600 hover:text-slate-900 transition-colors duration-200">
@@ -99,5 +124,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('max', today);
 });
+
+function handleReceiptSelect(input) {
+    const file = input.files[0];
+    const preview = document.getElementById('receiptPreview');
+    
+    if (file) {
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB');
+            input.value = '';
+            return;
+        }
+        
+        // Check file type
+        if (!file.type.match('image.*') && file.type !== 'application/pdf') {
+            alert('Please upload an image or PDF file');
+            input.value = '';
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (file.type === 'application/pdf') {
+                preview.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <svg class="w-8 h-8 mx-auto text-red-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="text-sm font-medium text-red-800">${file.name}</p>
+                        <p class="text-xs text-red-600">PDF Document</p>
+                    </div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Receipt preview" class="max-h-32 mx-auto rounded-lg shadow-md">
+                    <p class="text-xs text-slate-600 mt-2">${file.name}</p>
+                `;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
 </script>
 @endsection
