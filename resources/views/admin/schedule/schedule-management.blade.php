@@ -461,9 +461,6 @@
             </div>
             
             <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                <button type="button" onclick="testFormValues()" class="px-4 py-2 text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100">
-                    🧪 Test Values
-                </button>
                 <button type="button" onclick="closeAddShiftModal()" class="px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
                     Cancel
                 </button>
@@ -675,61 +672,6 @@ document.addEventListener('click', function(e) {
         document.getElementById('employeeSearchResults').classList.add('hidden');
     }
 });
-
-// Test form values without submitting
-function testFormValues() {
-    const addShiftForm = document.getElementById('addShiftForm');
-    if (!addShiftForm) {
-        alert('Add shift form not found!');
-        return;
-    }
-    
-    const employeeId = document.getElementById('employeeId').value;
-    const shiftTypeSelect = addShiftForm.querySelector('select[name="shift_type"]');
-    const shiftType = shiftTypeSelect ? shiftTypeSelect.value : '';
-    const shiftTypeSelectedIndex = shiftTypeSelect ? shiftTypeSelect.selectedIndex : -1;
-    const startDate = addShiftForm.querySelector('input[name="schedule_start"]').value;
-    const endDate = addShiftForm.querySelector('input[name="schedule_end"]').value;
-    const selectedDays = addShiftForm.querySelectorAll('input[name="days[]"]:checked');
-    
-    console.log('🧪 TESTING FORM VALUES:');
-    console.log('Add Shift Form Found:', !!addShiftForm);
-    console.log('Employee ID:', employeeId);
-    console.log('Shift Type:', shiftType);
-    console.log('Shift Type Selected Index:', shiftTypeSelectedIndex);
-    console.log('Shift Type Select Exists:', !!shiftTypeSelect);
-    console.log('Shift Type Options:', shiftTypeSelect ? Array.from(shiftTypeSelect.options).map((opt, index) => ({
-        index: index,
-        value: opt.value, 
-        text: opt.text, 
-        selected: opt.selected
-    })) : []);
-    console.log('Start Date:', startDate);
-    console.log('End Date:', endDate);
-    console.log('Selected Days:', Array.from(selectedDays).map(cb => cb.value));
-    console.log('Selected Days Count:', selectedDays.length);
-    
-    // Test each validation
-    const issues = [];
-    if (!employeeId || employeeId.trim() === '') issues.push('❌ Employee not selected');
-    else issues.push('✅ Employee selected: ' + employeeId);
-    
-    if (!shiftTypeSelect) issues.push('❌ Shift type dropdown not found in add form');
-    else if (shiftTypeSelectedIndex <= 0) issues.push('❌ Shift type not selected (index: ' + shiftTypeSelectedIndex + ')');
-    else if (!shiftType || shiftType.trim() === '' || shiftType === 'Select Shift Type') issues.push('❌ Invalid shift type value: "' + shiftType + '"');
-    else issues.push('✅ Shift type selected: ' + shiftType);
-    
-    if (!startDate || startDate.trim() === '') issues.push('❌ Start time not selected');
-    else issues.push('✅ Start time selected: ' + startDate);
-    
-    if (!endDate || endDate.trim() === '') issues.push('❌ End time not selected');
-    else issues.push('✅ End time selected: ' + endDate);
-    
-    if (selectedDays.length === 0) issues.push('❌ No working days selected');
-    else issues.push('✅ Working days selected: ' + Array.from(selectedDays).map(cb => cb.value).join(', '));
-    
-    alert('Form Validation Test:\n\n' + issues.join('\n'));
-}
 
 // Form submission with notification
 document.getElementById('addShiftForm').addEventListener('submit', function(e) {
