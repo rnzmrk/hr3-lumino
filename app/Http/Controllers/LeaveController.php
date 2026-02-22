@@ -57,6 +57,14 @@ class LeaveController extends Controller
     }
 
     /**
+     * Show the form for creating a new leave request.
+     */
+    public function create()
+    {
+        return view('admin.leaves.create-leave');
+    }
+
+    /**
      * Store a new leave request.
      */
     public function store(Request $request)
