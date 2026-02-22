@@ -497,8 +497,7 @@
         termsCheckbox.addEventListener('change', updateSubmitButton);
 
         // Initialize submit button state
-        const submitButton = document.querySelector('button[type="submit"]');
-        submitButton.disabled = false;
+        updateSubmitButton();
     </script>
 
     <!-- Terms and Conditions Modal -->
