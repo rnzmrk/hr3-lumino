@@ -315,7 +315,7 @@ document.getElementById('leaveRequestForm').addEventListener('submit', function(
         console.log(key, value);
     }
     
-    fetch('/leave-requests', {
+    fetch('/leaves', {
         method: 'POST',
         body: formData,
         headers: {
