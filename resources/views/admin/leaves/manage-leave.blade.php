@@ -12,7 +12,7 @@
                 <p class="text-gray-600 mt-2">Review and manage employee leave requests</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="/create-leave" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <a href="{{ route('leaves.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     + New Request
                 </a>
             </div>
@@ -152,7 +152,7 @@
                 </thead>
                 <tbody class="bg-white">
                     @forelse ($leaveRequests as $leaveRequest)
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50" data-id="{{ $leaveRequest->id }}">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">{{ $leaveRequest->employee_name }}</div>
                         </td>
@@ -203,7 +203,7 @@
                                 </svg>
                                 <p class="text-lg font-medium text-gray-900 mb-1">No leave requests found</p>
                                 <p class="text-sm text-gray-500">Get started by creating a new leave request.</p>
-                                <a href="/create-leave" class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                <a href="{{ route('leaves.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                     </svg>
@@ -268,67 +268,70 @@ function filterByStatus(status) {
     filterLeaveRequests();
 }
 
-// View leave request details - Enhanced with modal
+// View leave request details - Simple popup using table data
 function viewLeaveRequest(id) {
-    fetch(`/leave-requests/${id}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const request = data.leave_request;
-                const dates = request.formatted_dates ? request.formatted_dates.join(', ') : 'No dates';
+    // Find the table row with the matching ID
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    if (!row) {
+        alert('Leave request not found');
+        return;
+    }
+    
+    // Get data from table cells
+    const cells = row.cells;
+    const employeeName = cells[0] ? cells[0].textContent.trim() : '';
+    const position = cells[1] ? cells[1].textContent.trim() : '';
+    const leaveType = cells[2] ? cells[2].textContent.trim() : '';
+    const leaveDates = cells[3] ? cells[3].textContent.trim() : '';
+    const reason = cells[4] ? cells[4].textContent.trim() : '';
+    const status = cells[5] ? cells[5].textContent.trim() : '';
+    
+    // Create simple popup with table data
+    const modalHtml = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
+            <div style="background: white; padding: 30px; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
+                <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 1.5rem; font-weight: bold;">Leave Request Details</h3>
                 
-                // Create a better modal-like display
-                const modalHtml = `
-                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
-                        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
-                            <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 1.5rem; font-weight: bold;">Leave Request Details</h3>
-                            
-                            <div style="margin-bottom: 15px;">
-                                <strong style="color: #6b7280;">Employee:</strong> ${request.employee_name}<br>
-                                <strong style="color: #6b7280;">Position:</strong> ${request.position}<br>
-                                <strong style="color: #6b7280;">Leave Type:</strong> 
-                                <span style="padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; ${getBadgeStyle(request.leave_type)}">
-                                    ${request.leave_type_label}
-                                </span><br>
-                                <strong style="color: #6b7280;">Status:</strong> 
-                                <span style="padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; ${getBadgeStyle(request.status)}">
-                                    ${request.status_label}
-                                </span>
-                            </div>
-                            
-                            <div style="margin-bottom: 15px;">
-                                <strong style="color: #6b7280;">Leave Dates:</strong><br>
-                                <span style="color: #374151;">${dates}</span>
-                            </div>
-                            
-                            <div style="margin-bottom: 15px;">
-                                <strong style="color: #6b7280;">Reason:</strong><br>
-                                <span style="color: #374151;">${request.reason}</span>
-                            </div>
-                            
-                            ${request.admin_notes ? `
-                            <div style="margin-bottom: 15px;">
-                                <strong style="color: #6b7280;">Admin Notes:</strong><br>
-                                <span style="color: #374151;">${request.admin_notes}</span>
-                            </div>
-                            ` : ''}
-                            
-                            <div style="text-align: right; margin-top: 20px;">
-                                <button onclick="this.closest('div').parentElement.remove()" style="background: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #6b7280;">Employee Name:</strong><br>
+                    <span style="color: #374151;">${employeeName}</span>
+                </div>
                 
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to load leave request details');
-        });
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #6b7280;">Position:</strong><br>
+                    <span style="color: #374151;">${position}</span>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #6b7280;">Leave Type:</strong><br>
+                    <span style="color: #374151;">${leaveType}</span>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #6b7280;">Leave Dates:</strong><br>
+                    <span style="color: #374151;">${leaveDates}</span>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #6b7280;">Reason:</strong><br>
+                    <span style="color: #374151;">${reason}</span>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #6b7280;">Status:</strong><br>
+                    <span style="color: #374151;">${status}</span>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button onclick="this.closest('div').parentElement.remove()" style="background: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
 // Helper function to get badge styles

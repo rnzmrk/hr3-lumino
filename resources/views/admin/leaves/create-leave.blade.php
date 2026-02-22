@@ -12,7 +12,7 @@
                 <p class="text-gray-600 mt-2">Submit a new leave request</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="/manage-leave" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                <a href="{{ route('leaves.manage') }}" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
                     ← Back to Leave Management
                 </a>
             </div>
@@ -336,7 +336,7 @@ document.getElementById('leaveRequestForm').addEventListener('submit', function(
         console.log('Response data:', data);
         if (data.success) {
             alert(data.message);
-            window.location.href = '/manage-leave';
+            window.location.href = '{{ route("leaves.manage") }}';
         } else {
             alert('Error: ' + (data.message || 'Failed to submit leave request'));
         }

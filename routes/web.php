@@ -44,9 +44,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
     Route::get('/leaves/create', [LeaveController::class, 'create'])->name('leaves.create');
     Route::post('/leaves', [LeaveController::class, 'store'])->name('leaves.store');
-    Route::get('/leaves/{leave}/edit', [LeaveController::class, 'edit'])->name('leaves.edit');
-    Route::put('/leaves/{leave}', [LeaveController::class, 'update'])->name('leaves.update');
-    Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy'])->name('leaves.destroy');
+    Route::get('/leaves/{leaveRequest}', [LeaveController::class, 'show'])->name('leaves.show');
+    Route::get('/leaves/{leaveRequest}/edit', [LeaveController::class, 'edit'])->name('leaves.edit');
+    Route::put('/leaves/{leaveRequest}', [LeaveController::class, 'update'])->name('leaves.update');
+    Route::delete('/leaves/{leaveRequest}', [LeaveController::class, 'destroy'])->name('leaves.destroy');
     Route::get('/leaves/export', [LeaveController::class, 'exportCsv'])->name('leaves.export');
     
     // Overtime routes

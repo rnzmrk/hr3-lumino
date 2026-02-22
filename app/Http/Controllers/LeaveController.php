@@ -65,6 +65,14 @@ class LeaveController extends Controller
     }
 
     /**
+     * Show the form for editing a leave request.
+     */
+    public function edit(LeaveRequest $leaveRequest)
+    {
+        return view('admin.leaves.edit-leave', compact('leaveRequest'));
+    }
+
+    /**
      * Store a new leave request.
      */
     public function store(Request $request)
@@ -133,10 +141,76 @@ class LeaveController extends Controller
      */
     public function show(LeaveRequest $leaveRequest)
     {
+        // Format the leave dates
+        $formattedDates = [];
+        if ($leaveRequest->leave_dates) {
+            $dates = explode(',', $leaveRequest->leave_dates);
+            foreach ($dates as $date) {
+                $formattedDates[] = date('M d, Y', strtotime(trim($date)));
+            }
+        }
+
+        // Create status and leave type labels
+        $statusLabels = [
+            'pending' => 'Pending',
+            'approved' => 'Approved', 
+            'rejected' => 'Rejected'
+        ];
+
+        $leaveTypeLabels = [
+            'sick' => 'Sick Leave',
+            'vacation' => 'Vacation Leave',
+            'personal' => 'Personal Leave',
+            'maternity' => 'Maternity Leave',
+            'emergency' => 'Emergency Leave'
+        ];
+
         return response()->json([
             'success' => true,
-            'leave_request' => $leaveRequest
+            'leave_request' => [
+                'id' => $leaveRequest->id,
+                'employee_name' => $leaveRequest->employee_name,
+                'position' => $leaveRequest->position,
+                'department' => $leaveRequest->department,
+                'leave_type' => $leaveRequest->leave_type,
+                'leave_type_label' => $leaveTypeLabels[$leaveRequest->leave_type] ?? $leaveRequest->leave_type,
+                'leave_dates' => $leaveRequest->leave_dates,
+                'formatted_dates' => $formattedDates,
+                'reason' => $leaveRequest->reason,
+                'status' => $leaveRequest->status,
+                'status_label' => $statusLabels[$leaveRequest->status] ?? $leaveRequest->status,
+                'admin_notes' => $leaveRequest->admin_notes,
+                'created_at' => $leaveRequest->created_at->format('M d, Y h:i A'),
+                'updated_at' => $leaveRequest->updated_at->format('M d, Y h:i A')
+            ]
         ]);
+    }
+
+    /**
+     * Update a leave request.
+     */
+    public function update(Request $request, LeaveRequest $leaveRequest)
+    {
+        $request->validate([
+            'employee_name' => 'required|string|max:255',
+            'position' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'leave_type' => 'required|string|max:255',
+            'leave_dates' => 'required|string',
+            'reason' => 'nullable|string'
+        ]);
+
+        $leaveRequest->update([
+            'employee_name' => $request->employee_name,
+            'position' => $request->position,
+            'department' => $request->department,
+            'leave_type' => $request->leave_type,
+            'leave_dates' => $request->leave_dates,
+            'reason' => $request->reason
+        ]);
+
+        return redirect()->route('leaves.manage')
+            ->with('success', 'Leave request updated successfully');
     }
 
     /**
