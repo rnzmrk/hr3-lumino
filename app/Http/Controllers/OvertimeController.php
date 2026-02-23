@@ -41,7 +41,7 @@ class OvertimeController extends Controller
         $totalCount = $allRequests->count();
         
         // Get today's counts
-        $today = now()->format('Y-m-d');
+        $today = now()->startOfDay();
         $pendingToday = $allRequests->where('status', 'pending')->where('created_at', '>=', $today)->count();
         $approvedToday = $allRequests->where('status', 'approved')->where('created_at', '>=', $today)->count();
         $rejectedToday = $allRequests->where('status', 'rejected')->where('created_at', '>=', $today)->count();

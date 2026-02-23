@@ -112,6 +112,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
     Route::put('/attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
     Route::delete('/attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
+    Route::post('/attendance/{attendance}/time-in', [AttendanceController::class, 'timeIn']);
+    Route::post('/attendance/{attendance}/time-out', [AttendanceController::class, 'timeOut']);
     Route::get('/attendance/export', [AttendanceController::class, 'exportCsv'])->name('attendance.export');
     Route::get('/employees/search-attendance', [AttendanceController::class, 'searchEmployees'])->name('employees.search.attendance');
     

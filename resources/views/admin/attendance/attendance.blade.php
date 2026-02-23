@@ -135,10 +135,11 @@
                     <tr>
                         <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[180px]">Employee</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[90px]">Date</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[80px]">Check In</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[80px]">Check Out</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[80px]">Time In</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[80px]">Time Out</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[80px]">Overtime</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[80px]">Status</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider min-w-[120px]">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200">
@@ -183,10 +184,24 @@
                                     @break
                             @endswitch
                         </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                @if(!$record->check_in)
+                                    <button onclick="timeIn({{ $record->id }})" class="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors duration-200">
+                                        Time In
+                                    </button>
+                                @endif
+                                @if(!$record->check_out && $record->check_in)
+                                    <button onclick="timeOut({{ $record->id }})" class="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors duration-200">
+                                        Time Out
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-slate-500">
+                        <td colspan="7" class="px-6 py-8 text-center text-slate-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -250,17 +265,24 @@
                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 
-                <!-- Check In -->
+                <!-- Time In -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Check In</label>
-                    <input type="time" id="checkIn" name="check_in" required
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Time In</label>
+                    <input type="time" id="checkIn" name="time_in" required
                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 
-                <!-- Check Out -->
+                <!-- Time Out -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Check Out</label>
-                    <input type="time" id="checkOut" name="check_out"
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Time Out</label>
+                    <input type="time" id="checkOut" name="time_out"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <!-- Overtime -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Overtime</label>
+                    <input type="time" id="overtime" name="overtime"
                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 
@@ -539,6 +561,54 @@ function showNotification(message, type = 'success') {
             document.body.removeChild(notification);
         }, 300);
     }, 5000);
+}
+
+// Time In function
+function timeIn(attendanceId) {
+    fetch(`/attendance/${attendanceId}/time-in`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Time In recorded successfully', 'success');
+            location.reload();
+        } else {
+            showNotification(data.message || 'Failed to record Time In', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while recording Time In', 'error');
+    });
+}
+
+// Time Out function
+function timeOut(attendanceId) {
+    fetch(`/attendance/${attendanceId}/time-out`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Time Out recorded successfully', 'success');
+            location.reload();
+        } else {
+            showNotification(data.message || 'Failed to record Time Out', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while recording Time Out', 'error');
+    });
 }
 </script>
 @endsection

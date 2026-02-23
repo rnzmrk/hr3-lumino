@@ -87,21 +87,21 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse ($overtimeRequests as $request)
+                    @forelse ($overtimeRequests as $attendance)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ $request->employee_name }}</div>
+                            <div class="text-sm font-medium text-gray-900">{{ $attendance->employee_name }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($request->date)->format('M d, Y') }}</div>
+                            <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($attendance->date)->format('M d, Y') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 try {
-                                    if ($request->check_in instanceof \Carbon\Carbon) {
-                                        echo $request->check_in->format('h:i A');
+                                    if ($attendance->check_in instanceof \Carbon\Carbon) {
+                                        echo $attendance->check_in->format('h:i A');
                                     } else {
-                                        $checkInString = (string) $request->check_in;
+                                        $checkInString = (string) $attendance->check_in;
                                         if (strpos($checkInString, ' ') !== false) {
                                             if (preg_match('/\d{4}-\d{2}-\d{2}.*\d{4}-\d{2}-\d{2}/', $checkInString)) {
                                                 $parts = explode(' ', $checkInString);
@@ -110,7 +110,7 @@
                                                 echo \Carbon\Carbon::parse($checkInString)->format('h:i A');
                                             }
                                         } else {
-                                            echo \Carbon\Carbon::parse($request->date . ' ' . $checkInString)->format('h:i A');
+                                            echo \Carbon\Carbon::parse($attendance->date . ' ' . $checkInString)->format('h:i A');
                                         }
                                     }
                                 } catch (\Exception $e) {
@@ -121,10 +121,10 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 try {
-                                    if ($request->check_out instanceof \Carbon\Carbon) {
-                                        echo $request->check_out->format('h:i A');
+                                    if ($attendance->check_out instanceof \Carbon\Carbon) {
+                                        echo $attendance->check_out->format('h:i A');
                                     } else {
-                                        $checkOutString = (string) $request->check_out;
+                                        $checkOutString = (string) $attendance->check_out;
                                         if (strpos($checkOutString, ' ') !== false) {
                                             if (preg_match('/\d{4}-\d{2}-\d{2}.*\d{4}-\d{2}-\d{2}/', $checkOutString)) {
                                                 $parts = explode(' ', $checkOutString);
@@ -133,7 +133,7 @@
                                                 echo \Carbon\Carbon::parse($checkOutString)->format('h:i A');
                                             }
                                         } else {
-                                            echo \Carbon\Carbon::parse($request->date . ' ' . $checkOutString)->format('h:i A');
+                                            echo \Carbon\Carbon::parse($attendance->date . ' ' . $checkOutString)->format('h:i A');
                                         }
                                     }
                                 } catch (\Exception $e) {
@@ -142,7 +142,7 @@
                             @endphp
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($request->check_in && $request->check_out)
+                            @if($attendance->check_in && $attendance->check_out)
                                 @php
                                     // Safe parsing with error handling
                                     $checkIn = null;
@@ -150,10 +150,10 @@
                                     
                                     try {
                                         // Handle check_in time parsing
-                                        if ($request->check_in instanceof \Carbon\Carbon) {
-                                            $checkIn = $request->check_in;
+                                        if ($attendance->check_in instanceof \Carbon\Carbon) {
+                                            $checkIn = $attendance->check_in;
                                         } else {
-                                            $checkInString = (string) $request->check_in;
+                                            $checkInString = (string) $attendance->check_in;
                                             // Check if it's already a full datetime or just time
                                             if (strpos($checkInString, ' ') !== false) {
                                                 // Check for malformed double date strings
@@ -165,7 +165,7 @@
                                                     $checkIn = \Carbon\Carbon::parse($checkInString);
                                                 }
                                             } else {
-                                                $checkIn = \Carbon\Carbon::parse($request->date . ' ' . $checkInString);
+                                                $checkIn = \Carbon\Carbon::parse($attendance->date . ' ' . $checkInString);
                                             }
                                         }
                                     } catch (\Exception $e) {
@@ -174,10 +174,10 @@
                                     
                                     try {
                                         // Handle check_out time parsing
-                                        if ($request->check_out instanceof \Carbon\Carbon) {
-                                            $checkOut = $request->check_out;
+                                        if ($attendance->check_out instanceof \Carbon\Carbon) {
+                                            $checkOut = $attendance->check_out;
                                         } else {
-                                            $checkOutString = (string) $request->check_out;
+                                            $checkOutString = (string) $attendance->check_out;
                                             // Check if it's already a full datetime or just time
                                             if (strpos($checkOutString, ' ') !== false) {
                                                 // Check for malformed double date strings
@@ -189,7 +189,7 @@
                                                     $checkOut = \Carbon\Carbon::parse($checkOutString);
                                                 }
                                             } else {
-                                                $checkOut = \Carbon\Carbon::parse($request->date . ' ' . $checkOutString);
+                                                $checkOut = \Carbon\Carbon::parse($attendance->date . ' ' . $checkOutString);
                                             }
                                         }
                                     } catch (\Exception $e) {
@@ -214,14 +214,14 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($request->overtime)
+                            @if($attendance->overtime)
                                 @php
                                     // Get overtime as negative number
                                     $otRawValue = 0;
-                                    if ($request->overtime instanceof \Carbon\Carbon) {
-                                        $otRawValue = -(int)$request->overtime->format('H'); // Make negative
+                                    if ($attendance->overtime instanceof \Carbon\Carbon) {
+                                        $otRawValue = -(int)$attendance->overtime->format('H'); // Make negative
                                     } else {
-                                        $otRawValue = -(int)(string) $request->overtime; // Make negative
+                                        $otRawValue = -(int)(string) $attendance->overtime; // Make negative
                                     }
                                 @endphp
                                 <div class="text-sm font-medium text-gray-900">{{ $otRawValue }}h</div>
@@ -230,32 +230,32 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($request->check_in && $request->check_out)
+                            @if($attendance->check_in && $attendance->check_out)
                                 @php
                                     // Calculate total hours with proper parsing
                                     // Handle check_in time parsing
-                                    if ($request->check_in instanceof \Carbon\Carbon) {
-                                        $checkIn = $request->check_in;
+                                    if ($attendance->check_in instanceof \Carbon\Carbon) {
+                                        $checkIn = $attendance->check_in;
                                     } else {
-                                        $checkInString = (string) $request->check_in;
+                                        $checkInString = (string) $attendance->check_in;
                                         // Check if it's already a full datetime or just time
                                         if (strpos($checkInString, ' ') !== false) {
                                             $checkIn = \Carbon\Carbon::parse($checkInString);
                                         } else {
-                                            $checkIn = \Carbon\Carbon::parse($request->date . ' ' . $checkInString);
+                                            $checkIn = \Carbon\Carbon::parse($attendance->date . ' ' . $checkInString);
                                         }
                                     }
                                     
                                     // Handle check_out time parsing
-                                    if ($request->check_out instanceof \Carbon\Carbon) {
-                                        $checkOut = $request->check_out;
+                                    if ($attendance->check_out instanceof \Carbon\Carbon) {
+                                        $checkOut = $attendance->check_out;
                                     } else {
-                                        $checkOutString = (string) $request->check_out;
+                                        $checkOutString = (string) $attendance->check_out;
                                         // Check if it's already a full datetime or just time
                                         if (strpos($checkOutString, ' ') !== false) {
                                             $checkOut = \Carbon\Carbon::parse($checkOutString);
                                         } else {
-                                            $checkOut = \Carbon\Carbon::parse($request->date . ' ' . $checkOutString);
+                                            $checkOut = \Carbon\Carbon::parse($attendance->date . ' ' . $checkOutString);
                                         }
                                     }
                                     
@@ -265,11 +265,11 @@
                                     $workMinutes = $checkOut->diffInMinutes($checkIn);
                                     
                                     $otRawValue = 0;
-                                    if ($request->overtime) {
-                                        if ($request->overtime instanceof \Carbon\Carbon) {
-                                            $otRawValue = -(int)$request->overtime->format('H'); // Make negative
+                                    if ($attendance->overtime) {
+                                        if ($attendance->overtime instanceof \Carbon\Carbon) {
+                                            $otRawValue = -(int)$attendance->overtime->format('H'); // Make negative
                                         } else {
-                                            $otRawValue = -(int)(string) $request->overtime; // Make negative
+                                            $otRawValue = -(int)(string) $attendance->overtime; // Make negative
                                         }
                                     }
                                     
@@ -283,17 +283,17 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $request->status === 'present' ? 'bg-green-100 text-green-800' : ($request->status === 'awol' ? 'bg-red-100 text-red-800' : ($request->status === 'late' ? 'bg-yellow-100 text-yellow-800' : ($request->status === 'approved' ? 'bg-green-100 text-green-800' : ($request->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')))) }}">
-                                {{ ucfirst($request->status) }}
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $attendance->status === 'present' ? 'bg-green-100 text-green-800' : ($attendance->status === 'awol' ? 'bg-red-100 text-red-800' : ($attendance->status === 'late' ? 'bg-yellow-100 text-yellow-800' : ($attendance->status === 'approved' ? 'bg-green-100 text-green-800' : ($attendance->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')))) }}">
+                                {{ ucfirst($attendance->status) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex justify-end space-x-2">
-                                <button onclick="editOvertimeRequest({{ $request->id }})" class="px-3 py-1 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100">Edit</button>
-                                <button onclick="viewOvertimeRequest({{ $request->id }})" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100">View</button>
-                                @if($request->status === 'pending')
-                                    <button onclick="updateOvertimeStatus({{ $request->id }}, 'approved')" class="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100">Approve</button>
-                                    <button onclick="updateOvertimeStatus({{ $request->id }}, 'rejected')" class="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100">Reject</button>
+                                <button onclick="editOvertimeRequest({{ $attendance->id }})" class="px-3 py-1 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100">Edit</button>
+                                <button onclick="viewOvertimeRequest({{ $attendance->id }})" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100">View</button>
+                                @if($attendance->status === 'pending')
+                                    <button onclick="updateOvertimeStatus({{ $attendance->id }}, 'approved')" class="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100">Approve</button>
+                                    <button onclick="updateOvertimeStatus({{ $attendance->id }}, 'rejected')" class="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100">Reject</button>
                                 @endif
                             </div>
                         </td>
