@@ -223,19 +223,30 @@
 // Filter functionality for leave requests
 function filterLeaveRequests() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    const typeFilter = document.getElementById('typeFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+    const typeFilter = document.getElementById('typeFilter').value.toLowerCase();
     
     const tableRows = document.querySelectorAll('tbody tr');
     
     tableRows.forEach(row => {
-        const employeeName = row.cells[0] ? row.cells[0].textContent.toLowerCase() : '';
-        const status = row.cells[4] ? row.cells[4].textContent.toLowerCase().trim() : '';
+        // Get text content from each cell, handling HTML elements
+        const employeeName = row.cells[0] ? row.cells[0].textContent.toLowerCase().trim() : '';
+        const position = row.cells[1] ? row.cells[1].textContent.toLowerCase().trim() : '';
         const leaveType = row.cells[2] ? row.cells[2].textContent.toLowerCase().trim() : '';
+        const leaveDates = row.cells[3] ? row.cells[3].textContent.toLowerCase().trim() : '';
+        const reason = row.cells[4] ? row.cells[4].textContent.toLowerCase().trim() : '';
+        const status = row.cells[5] ? row.cells[5].textContent.toLowerCase().trim() : '';
         
-        let matchesSearch = employeeName.includes(searchTerm);
-        let matchesStatus = !statusFilter || status.includes(statusFilter.toLowerCase());
-        let matchesType = !typeFilter || leaveType.includes(typeFilter.toLowerCase());
+        // Check if row matches all filters
+        let matchesSearch = !searchTerm || 
+            employeeName.includes(searchTerm) || 
+            position.includes(searchTerm) || 
+            leaveType.includes(searchTerm) || 
+            leaveDates.includes(searchTerm) || 
+            reason.includes(searchTerm);
+        
+        let matchesStatus = !statusFilter || status.includes(statusFilter);
+        let matchesType = !typeFilter || leaveType.includes(typeFilter);
         
         if (matchesSearch && matchesStatus && matchesType) {
             row.style.display = '';
@@ -251,6 +262,7 @@ function clearFilters() {
     document.getElementById('statusFilter').value = '';
     document.getElementById('typeFilter').value = '';
     
+    // Show all rows
     const tableRows = document.querySelectorAll('tbody tr');
     tableRows.forEach(row => {
         row.style.display = ''; 
@@ -353,6 +365,10 @@ function getBadgeStyle(type) {
 function updateLeaveStatus(id, status) {
     const notes = prompt(`Enter admin notes for ${status} action (optional):`);
     
+    if (notes === null) {
+        return; // User cancelled the prompt
+    }
+    
     fetch(`/leave-requests/${id}/status`, {
         method: 'PUT',
         headers: {
@@ -361,22 +377,89 @@ function updateLeaveStatus(id, status) {
         },
         body: JSON.stringify({
             status: status,
-            admin_notes: notes
+            admin_notes: notes || ''
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            alert(data.message);
-            location.reload(); // Reload to see updated status
+            // Show success notification
+            showNotification(data.message || `Leave request ${status} successfully!`, 'success');
+            
+            // Update the status badge in the table without reload
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            if (row) {
+                const statusCell = row.cells[5]; // Status column
+                if (statusCell) {
+                    // Update status badge
+                    statusCell.innerHTML = `<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(status)}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+                }
+                
+                // Remove approve/reject buttons if status is no longer pending
+                const actionsCell = row.cells[6]; // Actions column
+                if (actionsCell && status !== 'pending') {
+                    const approveBtn = actionsCell.querySelector('button[onclick*="approved"]');
+                    const rejectBtn = actionsCell.querySelector('button[onclick*="rejected"]');
+                    if (approveBtn) approveBtn.remove();
+                    if (rejectBtn) rejectBtn.remove();
+                }
+            }
         } else {
-            alert('Error: ' + (data.message || 'Failed to update status'));
+            showNotification(data.message || `Failed to ${status} leave request`, 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while updating the status');
+        showNotification('An error occurred while updating the status', 'error');
     });
+}
+
+// Helper function to get status badge class
+function getStatusBadgeClass(status) {
+    const classes = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'approved': 'bg-green-100 text-green-800',
+        'rejected': 'bg-red-100 text-red-800'
+    };
+    return classes[status] || 'bg-gray-100 text-gray-800';
+}
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const colors = {
+        success: 'bg-green-100 border border-green-400 text-green-700',
+        error: 'bg-red-100 border border-red-400 text-red-700',
+        info: 'bg-blue-100 border border-blue-400 text-blue-700'
+    };
+    
+    notification.className = `${colors[type]} px-4 py-3 rounded relative mb-4`;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.style.minWidth = '300px';
+    
+    notification.innerHTML = `
+        <span class="block sm:inline">${message}</span>
+        <button onclick="this.parentElement.remove()" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <span class="text-2xl">&times;</span>
+        </button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
 }
 </script>
 

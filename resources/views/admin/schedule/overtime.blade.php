@@ -216,7 +216,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($attendance->overtime)
                                 @php
-                                    // Get overtime as negative number
+                                    // Get overtime as negative number  
                                     $otRawValue = 0;
                                     if ($attendance->overtime instanceof \Carbon\Carbon) {
                                         $otRawValue = -(int)$attendance->overtime->format('H'); // Make negative
@@ -316,20 +316,64 @@
         </div>
         
         <!-- Pagination -->
+        @if($overtimeRequests->hasPages())
         <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-gray-700">
-                    Showing <span class="font-medium">1</span> to <span class="font-medium">6</span> of <span class="font-medium">35</span> results
+                    Showing 
+                    <span class="font-medium">{{ $overtimeRequests->firstItem() }}</span> 
+                    to 
+                    <span class="font-medium">{{ $overtimeRequests->lastItem() }}</span> 
+                    of 
+                    <span class="font-medium">{{ $overtimeRequests->total() }}</span> 
+                    results
                 </div>
-                <div class="flex items-center space-x-2">
-                    <button class="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</button>
-                    <button class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md">1</button>
-                    <button class="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">2</button>
-                    <button class="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">3</button>
-                    <button class="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</button>
+                <div class="flex items-center space-x-1">
+                    {{-- Custom pagination links for better styling --}}
+                    @if($overtimeRequests->onFirstPage())
+                        <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                            Previous
+                        </span>
+                    @else
+                        <a href="{{ $overtimeRequests->previousPageUrl() }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Previous
+                        </a>
+                    @endif
+                    
+                    {{-- Page numbers --}}
+                    @foreach($overtimeRequests->links()->elements as $element)
+                        @if(is_string($element))
+                            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                {{ $element }}
+                            </span>
+                        @endif
+                    @endforeach
+                    
+                    @foreach(range(1, $overtimeRequests->lastPage()) as $page)
+                        @if($page == $overtimeRequests->currentPage())
+                            <span aria-current="page" class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                                {{ $page }}
+                            </span>
+                        @else
+                            <a href="{{ $overtimeRequests->url($page) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                {{ $page }}
+                            </a>
+                        @endif
+                    @endforeach
+                    
+                    @if($overtimeRequests->hasMorePages())
+                        <a href="{{ $overtimeRequests->nextPageUrl() }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            Next
+                        </a>
+                    @else
+                        <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                            Next
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>
+        @endif
     </div>
 </div>
 

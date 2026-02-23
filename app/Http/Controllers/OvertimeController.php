@@ -30,8 +30,8 @@ class OvertimeController extends Controller
             $query->where('employee_name', 'like', '%' . $request->search . '%');
         }
         
-        // Get filtered attendance records
-        $overtimeRequests = $query->latest()->get();
+        // Get filtered attendance records with pagination
+        $overtimeRequests = $query->latest()->paginate(5);
         
         // Calculate stats based on ALL records (not filtered)
         $allRequests = Attendance::all();
