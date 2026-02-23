@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
             return 'Error: ' . $e->getMessage();
         }
     });
+    Route::get('/overtime', [OvertimeController::class, 'index'])->name('overtime.index');
     Route::get('/overtime/export', [OvertimeController::class, 'exportCsv'])->name('overtime.export');
     Route::get('/claims-reimbursement', [ClaimsController::class, 'index'])->name('claims.index');
     Route::get('/claims/create', [ClaimsController::class, 'create'])->name('claims.create');
