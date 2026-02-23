@@ -20,8 +20,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Attendance API Routes
-Route::get('/attendance-record', [attendanceController::class, 'index']);
 
-// Shift API Routes
+Route::get('/attendance-record', [attendanceController::class, 'index']);
 Route::get('/shift-record', [ShiftController::class, 'index']);
+
+// Protected API Routes (require authentication)
+Route::middleware('auth:sanctum')->group(function () {
+    // Add protected routes here later
+});
