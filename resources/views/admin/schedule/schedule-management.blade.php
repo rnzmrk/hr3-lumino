@@ -294,6 +294,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-2">
+                                        <button onclick="viewShift({{ $shift->id }})" class="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100">
+                                            View
+                                        </button>
                                         <a href="/shifts/{{ $shift->id }}/edit" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 inline-block">
                                             Edit
                                         </a>
@@ -1254,5 +1257,83 @@ updatePhilippineTime();
 
 // Update time every second
 setInterval(updatePhilippineTime, 1000);
+
+// View Shift Details Function
+function viewShift(shiftId) {
+    fetch(`/shifts/${shiftId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const shift = data.shift;
+                
+                const modalHtml = `
+                    <div id="viewShiftModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+                        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
+                            <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 1.5rem; font-weight: bold;">Shift Details</h3>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #6b7280;">Employee:</strong><br>
+                                <span style="color: #374151;">${shift.employee_name}</span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #6b7280;">Shift Type:</strong><br>
+                                <span style="color: #374151;">${shift.shift_type}</span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #6b7280;">Schedule Start:</strong><br>
+                                <span style="color: #374151;">${new Date(shift.schedule_start).toLocaleString()}</span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #6b7280;">Schedule End:</strong><br>
+                                <span style="color: #374151;">${new Date(shift.schedule_end).toLocaleString()}</span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #6b7280;">Days:</strong><br>
+                                <span style="color: #374151;">${shift.days}</span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #6b7280;">Created At:</strong><br>
+                                <span style="color: #374151;">${new Date(shift.created_at).toLocaleString()}</span>
+                            </div>
+                            
+                            <div style="text-align: right; margin-top: 20px;">
+                                <button onclick="closeViewModal()" style="background: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+                // Add click event listener to close modal when clicking outside
+                document.getElementById('viewShiftModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeViewModal();
+                    }
+                });
+            } else {
+                alert('Error: ' + (data.message || 'Failed to load shift details'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load shift details');
+        });
+}
+
+// Close View Modal Function
+function closeViewModal() {
+    const modal = document.getElementById('viewShiftModal');
+    if (modal) {
+        modal.remove();
+    }
+}
 </script>
 @endsection

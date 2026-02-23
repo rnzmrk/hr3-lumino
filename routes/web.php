@@ -123,6 +123,7 @@ Route::middleware(['auth'])->group(function () {
     // Shift Web Routes
     Route::get('/shifts', [ShiftController::class, 'index']);
     Route::post('/shifts', [ShiftController::class, 'store']);
+    Route::get('/shifts/{shift}', [ShiftController::class, 'show']);
     Route::get('/shifts/{shift}/edit', [ShiftController::class, 'edit']);
     Route::put('/shifts/{shift}', [ShiftController::class, 'update']);
     Route::delete('/shifts/{shift}', [ShiftController::class, 'destroy']);

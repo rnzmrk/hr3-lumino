@@ -12,8 +12,8 @@
     <nav class="h-[calc(100vh-4rem)] px-4 py-6 space-y-6 overflow-y-auto">
         <!-- Dashboard -->
         <div class="space-y-1">
-            <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-blue-900 text-blue-100 hover:bg-blue-600 transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-blue-500 hover:text-white transition-colors duration-200">
+                <svg class="w-5 h-5 mr-3 text-slate-500 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
                 Dashboard
@@ -120,16 +120,132 @@
 
 <!-- JavaScript for Dropdown Functionality Only -->
 <script>
+// Initialize dropdown states on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Get current page path to determine which section we're in
+    const currentPath = window.location.pathname;
+    let activeSection = null;
+    let activePage = null;
+    
+    // Determine which section the current page belongs to
+    if (currentPath.includes('/timesheets')) {
+        activeSection = 'timesheet';
+        if (currentPath.includes('/timesheets-record')) {
+            activePage = 'timesheets-record';
+        } else if (currentPath.includes('/timesheets-report')) {
+            activePage = 'timesheets-report';
+        }
+    } else if (currentPath.includes('/leave') || currentPath.includes('/leaves')) {
+        activeSection = 'leave';
+        if (currentPath.includes('/manage')) {
+            activePage = 'leaves-manage';
+        } else if (currentPath.includes('/leave-types')) {
+            activePage = 'leave-types';
+        }
+    } else if (currentPath.includes('/schedule') || currentPath.includes('/overtime') || currentPath.includes('/shifts')) {
+        activeSection = 'shift';
+        if (currentPath.includes('/schedule-management')) {
+            activePage = 'schedule-management';
+        } else if (currentPath.includes('/overtime') && !currentPath.includes('/overtime-requests')) {
+            activePage = 'overtime';
+        } else if (currentPath.includes('/overtime-requests')) {
+            activePage = 'overtime-requests';
+        }
+    } else if (currentPath.includes('/attendance')) {
+        activePage = 'attendance';
+    } else if (currentPath.includes('/claims-reimbursement')) {
+        activePage = 'claims-reimbursement';
+    } else if (currentPath.includes('/audit-logs')) {
+        activePage = 'audit-logs';
+    } else if (currentPath === '/' || currentPath.includes('/dashboard')) {
+        activePage = 'dashboard';
+    }
+    
+    // Remove all active classes first
+    document.querySelectorAll('a, button').forEach(element => {
+        element.classList.remove('bg-blue-900', 'text-blue-100', 'bg-blue-600', 'text-white');
+        element.classList.add('text-slate-700', 'bg-white');
+    });
+    
+    // Add active styling to the current page/section
+    if (activePage) {
+        // Find and activate the specific page link
+        const pageLinks = document.querySelectorAll('a[href*="' + activePage + '"]');
+        pageLinks.forEach(link => {
+            link.classList.remove('text-slate-700', 'bg-white');
+            link.classList.add('bg-blue-600', 'text-white');
+        });
+    }
+    
+    // Add active styling to section dropdown if we're in a dropdown section
+    if (activeSection) {
+        const sectionButton = document.querySelector('button[onclick="toggleDropdown(\'' + activeSection + '\')"]');
+        if (sectionButton) {
+            sectionButton.classList.remove('text-slate-700', 'bg-white');
+            sectionButton.classList.add('bg-blue-600', 'text-white');
+        }
+    }
+    
+    // Close all dropdowns first
+    ['timesheet', 'leave', 'shift'].forEach(id => {
+        const dropdown = document.getElementById(id + '-dropdown');
+        const arrow = document.getElementById(id + '-arrow');
+        if (dropdown) dropdown.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    });
+    
+    // Open the active section's dropdown
+    if (activeSection) {
+        const activeDropdown = document.getElementById(activeSection + '-dropdown');
+        const activeArrow = document.getElementById(activeSection + '-arrow');
+        if (activeDropdown) {
+            activeDropdown.classList.remove('hidden');
+            if (activeArrow) activeArrow.style.transform = 'rotate(180deg)';
+        }
+    }
+});
+
 function toggleDropdown(id) {
     const dropdown = document.getElementById(id + '-dropdown');
     const arrow = document.getElementById(id + '-arrow');
     
     if (dropdown.classList.contains('hidden')) {
+        // Close all other dropdowns first
+        ['timesheet', 'leave', 'shift'].forEach(otherId => {
+            if (otherId !== id) {
+                const otherDropdown = document.getElementById(otherId + '-dropdown');
+                const otherArrow = document.getElementById(otherId + '-arrow');
+                const otherButton = document.querySelector('button[onclick="toggleDropdown(\'' + otherId + '\')"]');
+                if (otherDropdown) otherDropdown.classList.add('hidden');
+                if (otherArrow) otherArrow.style.transform = 'rotate(0deg)';
+                if (otherButton) {
+                    otherButton.classList.remove('bg-blue-600', 'text-white');
+                    otherButton.classList.add('text-slate-700', 'bg-white');
+                }
+            }
+        });
+        
+        // Open clicked dropdown and make it active
         dropdown.classList.remove('hidden');
         arrow.style.transform = 'rotate(180deg)';
+        
+        // Make the clicked button active
+        const clickedButton = document.querySelector('button[onclick="toggleDropdown(\'' + id + '\')"]');
+        if (clickedButton) {
+            clickedButton.classList.remove('text-slate-700', 'bg-white');
+            clickedButton.classList.add('bg-blue-600', 'text-white');
+        }
     } else {
+        // Close clicked dropdown and remove active state
         dropdown.classList.add('hidden');
         arrow.style.transform = 'rotate(0deg)';
+        
+        // Remove active state from button
+        const clickedButton = document.querySelector('button[onclick="toggleDropdown(\'' + id + '\')"]');
+        if (clickedButton) {
+            clickedButton.classList.remove('bg-blue-600', 'text-white');
+            clickedButton.classList.add('text-slate-700', 'bg-white');
+        }
     }
 }
 </script>

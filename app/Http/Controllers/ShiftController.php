@@ -51,6 +51,17 @@ class ShiftController extends Controller
     }
 
     /**
+     * Display the specified shift.
+     */
+    public function show(Shift $shift)
+    {
+        return response()->json([
+            'success' => true,
+            'shift' => $shift
+        ]);
+    }
+
+    /**
      * Store a newly created shift in storage.
      */
     public function store(Request $request)
