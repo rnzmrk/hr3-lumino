@@ -95,6 +95,16 @@ class ShiftController extends Controller
 
             \Log::info('Shift created successfully with ID: ' . $shift->id);
 
+            // Log the audit activity
+            \App\Services\AuditLogService::log(
+                'created',
+                'App\Models\Shift',
+                $shift->id,
+                "Created new shift for {$employee->employee_name} - {$validated['shift_type']} ({$validated['schedule_start']} to {$validated['schedule_end']})",
+                null,
+                $shiftData
+            );
+
             return back()->with('success', 'Shift added successfully!');
         } catch (\Exception $e) {
             \Log::error('Error creating shift: ' . $e->getMessage());

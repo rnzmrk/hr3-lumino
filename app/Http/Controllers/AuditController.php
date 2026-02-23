@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,25 +11,40 @@ use Illuminate\Validation\Rule;
 class AuditController extends Controller
 {
     /**
-     * Display the audit logs and user management page.
+     * Display the audit logs page.
      */
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = AuditLog::with('user');
         
         // Search functionality
         if ($request->has('search') && $request->search != '') {
             $searchTerm = $request->search;
             $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('email', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('username', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('description', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('action', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('subject_type', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhereHas('user', function($userQuery) use ($searchTerm) {
+                      $userQuery->where('name', 'LIKE', '%' . $searchTerm . '%')
+                               ->orWhere('email', 'LIKE', '%' . $searchTerm . '%');
+                  });
             });
         }
         
-        $users = $query->latest()->paginate(10);
+        // Filter by action
+        if ($request->has('action') && $request->action != '') {
+            $query->where('action', $request->action);
+        }
         
-        return view('admin.audit.index', compact('users'));
+        // Filter by user
+        if ($request->has('user_id') && $request->user_id != '') {
+            $query->where('user_id', $request->user_id);
+        }
+        
+        $auditLogs = $query->latest()->paginate(5);
+        $users = User::orderBy('name')->get();
+        
+        return view('admin.audit.index', compact('auditLogs', 'users'));
     }
     
     /**

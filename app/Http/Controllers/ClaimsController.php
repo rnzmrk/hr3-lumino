@@ -239,10 +239,21 @@ class ClaimsController extends Controller
                 ->withInput();
         }
 
+        $oldStatus = $claim->status;
         $claim->update([
             'status' => $request->status,
             'remarks' => $request->remarks,
         ]);
+
+        // Log the audit activity
+        \App\Services\AuditLogService::log(
+            $request->status,
+            'App\Models\Claim',
+            $claim->id,
+            "{$request->status} claim for {$claim->employee_name} - Amount: {$claim->amount}",
+            ['status' => $oldStatus, 'remarks' => $claim->getOriginal('remarks')],
+            ['status' => $request->status, 'remarks' => $request->remarks]
+        );
 
         $statusMessage = [
             'approved' => 'Claim approved successfully.',

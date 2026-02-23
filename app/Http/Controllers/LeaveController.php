@@ -126,10 +126,21 @@ class LeaveController extends Controller
             'admin_notes' => 'nullable|string|max:500'
         ]);
 
+        $oldStatus = $leaveRequest->status;
         $leaveRequest->update([
             'status' => $request->status,
             'admin_notes' => $request->admin_notes
         ]);
+
+        // Log the audit activity
+        \App\Services\AuditLogService::log(
+            $request->status,
+            'App\Models\LeaveRequest',
+            $leaveRequest->id,
+            "{$request->status} leave request for {$leaveRequest->employee_name} - {$leaveRequest->leave_type}",
+            ['status' => $oldStatus, 'admin_notes' => $leaveRequest->getOriginal('admin_notes')],
+            ['status' => $request->status, 'admin_notes' => $request->admin_notes]
+        );
 
         return response()->json([
             'success' => true,

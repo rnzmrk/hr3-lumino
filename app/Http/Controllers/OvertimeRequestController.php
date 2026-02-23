@@ -153,10 +153,21 @@ class OvertimeRequestController extends Controller
                 'admin_notes' => 'nullable|string|max:500'
             ]);
 
+            $oldStatus = $overtimeRequest->status;
             $overtimeRequest->update([
                 'status' => $request->status,
                 'admin_notes' => $request->admin_notes
             ]);
+
+            // Log the audit activity
+            \App\Services\AuditLogService::log(
+                $request->status,
+                'App\Models\OvertimeRequest',
+                $overtimeRequest->id,
+                "{$request->status} overtime request for {$overtimeRequest->employee_name} - {$overtimeRequest->overtime_hours} hours",
+                ['status' => $oldStatus, 'admin_notes' => $overtimeRequest->getOriginal('admin_notes')],
+                ['status' => $request->status, 'admin_notes' => $request->admin_notes]
+            );
 
             return response()->json([
                 'success' => true,

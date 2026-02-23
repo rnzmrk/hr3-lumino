@@ -419,28 +419,23 @@ function clearFilters() {
 }
 
 function filterOvertimeRequests() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const searchTerm = document.getElementById('searchInput').value;
     const statusFilter = document.getElementById('statusFilter').value;
     const dateFilter = document.getElementById('dateFilter').value;
     
-    const tableRows = document.querySelectorAll('tbody tr');
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (searchTerm) params.append('search', searchTerm);
+    if (statusFilter) params.append('status', statusFilter);
+    if (dateFilter) params.append('date', dateFilter);
     
-    tableRows.forEach(row => {
-        const employeeName = row.cells[0] ? row.cells[0].textContent.toLowerCase() : '';
-        const status = row.cells[5] ? row.cells[5].textContent.toLowerCase().trim() : '';
-        const date = row.cells[1] ? row.cells[1].textContent.trim() : '';
-        
-        let matchesSearch = employeeName.includes(searchTerm);
-        let matchesStatus = !statusFilter || status.includes(statusFilter.toLowerCase());
-        let matchesDate = !dateFilter || date.includes(new Date(dateFilter).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
-        
-        row.style.display = matchesSearch && matchesStatus && matchesDate ? '' : 'none';
-    });
+    // Redirect to filtered page
+    window.location.href = '/overtime' + (params.toString() ? '?' + params.toString() : '');
 }
 
 // Edit overtime request
 function editOvertimeRequest(id) {
-    fetch(`/overtime-requests/${id}`)
+    fetch(`/overtime/${id}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -529,7 +524,7 @@ function saveOvertimeRequest(event, id) {
         admin_notes: document.getElementById('editAdminNotes').value
     };
     
-    fetch(`/overtime-requests/${id}/update`, {
+    fetch(`/overtime/${id}/update`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -554,7 +549,7 @@ function saveOvertimeRequest(event, id) {
 
 // View overtime request details
 function viewOvertimeRequest(id) {
-    fetch(`/overtime-requests/${id}`)
+    fetch(`/overtime/${id}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -606,7 +601,7 @@ function viewOvertimeRequest(id) {
 function updateOvertimeStatus(id, status) {
     const notes = prompt(`Enter admin notes for ${status} action (optional):`);
     
-    fetch(`/overtime-requests/${id}/status`, {
+    fetch(`/overtime/${id}/status`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -648,9 +643,22 @@ function getStatusBadgeStyle(status) {
 // Event listeners
 document.getElementById('filterButton').addEventListener('click', filterOvertimeRequests);
 document.getElementById('clearButton').addEventListener('click', clearFilters);
-document.getElementById('searchInput').addEventListener('input', filterOvertimeRequests);
-document.getElementById('statusFilter').addEventListener('change', filterOvertimeRequests);
-document.getElementById('dateFilter').addEventListener('change', filterOvertimeRequests);
+
+// Preserve filter values from URL parameters
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Set filter values from URL
+    if (urlParams.get('search')) {
+        document.getElementById('searchInput').value = urlParams.get('search');
+    }
+    if (urlParams.get('status')) {
+        document.getElementById('statusFilter').value = urlParams.get('status');
+    }
+    if (urlParams.get('date')) {
+        document.getElementById('dateFilter').value = urlParams.get('date');
+    }
+});
 </script>
 
 @endsection

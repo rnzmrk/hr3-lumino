@@ -10,22 +10,41 @@ class OvertimeController extends Controller
     /**
      * Display the overtime management page.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Get ALL attendance records
-        $overtimeRequests = Attendance::latest()->get();
+        // Build query with filters
+        $query = Attendance::query();
         
-        // Calculate stats based on overtime presence
-        $pendingCount = $overtimeRequests->where('status', 'pending')->count();
-        $approvedCount = $overtimeRequests->where('status', 'approved')->count();
-        $rejectedCount = $overtimeRequests->where('status', 'rejected')->count();
-        $totalCount = $overtimeRequests->count();
+        // Filter by date
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('date', $request->date);
+        }
+        
+        // Filter by status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Search by employee name
+        if ($request->has('search') && $request->search) {
+            $query->where('employee_name', 'like', '%' . $request->search . '%');
+        }
+        
+        // Get filtered attendance records
+        $overtimeRequests = $query->latest()->get();
+        
+        // Calculate stats based on ALL records (not filtered)
+        $allRequests = Attendance::all();
+        $pendingCount = $allRequests->where('status', 'pending')->count();
+        $approvedCount = $allRequests->where('status', 'approved')->count();
+        $rejectedCount = $allRequests->where('status', 'rejected')->count();
+        $totalCount = $allRequests->count();
         
         // Get today's counts
         $today = now()->format('Y-m-d');
-        $pendingToday = $overtimeRequests->where('status', 'pending')->where('created_at', '>=', $today)->count();
-        $approvedToday = $overtimeRequests->where('status', 'approved')->where('created_at', '>=', $today)->count();
-        $rejectedToday = $overtimeRequests->where('status', 'rejected')->where('created_at', '>=', $today)->count();
+        $pendingToday = $allRequests->where('status', 'pending')->where('created_at', '>=', $today)->count();
+        $approvedToday = $allRequests->where('status', 'approved')->where('created_at', '>=', $today)->count();
+        $rejectedToday = $allRequests->where('status', 'rejected')->where('created_at', '>=', $today)->count();
         
         $stats = [
             'pending' => [
@@ -73,7 +92,18 @@ class OvertimeController extends Controller
             'admin_notes' => 'nullable|string'
         ]);
 
+        $oldStatus = $attendance->status;
         $attendance->update($validated);
+
+        // Log the audit activity
+        \App\Services\AuditLogService::log(
+            'updated',
+            'App\Models\Attendance',
+            $attendance->id,
+            "Updated overtime request for {$attendance->employee_name}",
+            ['status' => $oldStatus, 'admin_notes' => $attendance->getOriginal('admin_notes')],
+            ['status' => $request->status, 'admin_notes' => $request->admin_notes]
+        );
 
         return response()->json([
             'success' => true,
@@ -92,7 +122,18 @@ class OvertimeController extends Controller
             'admin_notes' => 'nullable|string'
         ]);
 
+        $oldStatus = $attendance->status;
         $attendance->update($validated);
+
+        // Log the audit activity
+        \App\Services\AuditLogService::log(
+            $request->status,
+            'App\Models\Attendance',
+            $attendance->id,
+            "{$request->status} overtime request for {$attendance->employee_name}",
+            ['status' => $oldStatus, 'admin_notes' => $attendance->getOriginal('admin_notes')],
+            ['status' => $request->status, 'admin_notes' => $request->admin_notes]
+        );
 
         return response()->json([
             'success' => true,

@@ -11,6 +11,7 @@ use App\Http\Controllers\OvertimeRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\TimesheetController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
             return 'Error: ' . $e->getMessage();
         }
     });
+    Route::get('/test-audit', [TestController::class, 'testAudit'])->name('test.audit');
     Route::get('/overtime', [OvertimeController::class, 'index'])->name('overtime.index');
     Route::get('/overtime/export', [OvertimeController::class, 'exportCsv'])->name('overtime.export');
     Route::get('/claims-reimbursement', [ClaimsController::class, 'index'])->name('claims.index');
@@ -91,6 +93,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/leave-types/{leave}', [LeaveTypeController::class, 'destroy'])->name('leave-types.destroy');
     
     // Overtime routes
+    Route::get('/overtime/{attendance}', [OvertimeController::class, 'show']);
     Route::put('/overtime/{attendance}/update', [OvertimeController::class, 'updateOvertimeRequest']);
     Route::put('/overtime/{attendance}/status', [OvertimeController::class, 'updateStatus'])->name('overtime.update.status');
     
